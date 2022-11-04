@@ -32,11 +32,9 @@ def make_w(num):
     df.to_csv("testdata.csv",header=False, index=False, sep="\t")
 
 def calc_alpha(w0, eps):
-    if not w0 == 0:
-        a = (1 - w0 + eps) / w0
-    else:
-        a = 1e+16
-    return a
+    if w0 == 0:
+        w0 = 0.01 # minimum w0
+    return (1 - w0 + eps) / w0
 
 def calc_L1_ratio(w0, w1, eps):
     b = w1 / (1 - w0 + eps)
