@@ -45,7 +45,7 @@ def trans_param():
     list = []
     for i in data:
         list2 = []
-        e = 1e-16
+        e = 1e-16 # これ小さすぎ？
         alpha = calc_alpha(i[0], e)
         L1_ratio = calc_L1_ratio(i[0], i[1], e)
         list2.append(alpha)
@@ -63,10 +63,11 @@ def calc_EN():
     regcoef = np.loadtxt("regcoef.csv")
     list = []
     for i in regcoef:
-        if i[1] < 1 - 1e-4:
-            i[1] += 1e-4
+        if i[1] < 1 - 1e-4: # i[1] が大体 1e-4 のときが問題？
+            i[1] += 1e-4 # continue # 要実験
         #print(i[0], i[1])
-        elastic_net = ElasticNet(alpha = i[0] + 0.04, l1_ratio = i[1])  #li_ratio alpha 足さないとエラーが出る。 /Users/zaizenkiichi/PycharmProjects/pythonProject2/venv/lib/python3.8/site-packages/sklearn/linear_model/_coordinate_descent.py:648: ConvergenceWarning: Objective did not converge. You might want to increase the number of iterations, check the scale of the features or consider increasing regularisation. Duality gap: 1.473e+00, tolerance: 5.000e-04 Linear regression models with null weight for the l1 regularization term are more efficiently fitted using one of the solvers implemented in sklearn.linear_model.Ridge/RidgeCV instead.model = cd_fast.enet_coordinate_descent(
+        elastic_net = ElasticNet(alpha = i[0] + 0.04, # 0.04 は消しましょう．
+                                 l1_ratio = i[1])  #li_ratio alpha 足さないとエラーが出る。 /Users/zaizenkiichi/PycharmProjects/pythonProject2/venv/lib/python3.8/site-packages/sklearn/linear_model/_coordinate_descent.py:648: ConvergenceWarning: Objective did not converge. You might want to increase the number of iterations, check the scale of the features or consider increasing regularisation. Duality gap: 1.473e+00, tolerance: 5.000e-04 Linear regression models with null weight for the l1 regularization term are more efficiently fitted using one of the solvers implemented in sklearn.linear_model.Ridge/RidgeCV instead.model = cd_fast.enet_coordinate_descent(
         elastic_net = elastic_net.fit(data_x, data_y)
         elastic_net_np = elastic_net.coef_.round(3)
         elastic_net_list = elastic_net_np.tolist()
@@ -78,7 +79,7 @@ def calc_EN():
 def f3(coef):
     X = np.array(coef)
     return np.linalg.norm(X, ord = 2)**2
-
+eps = 1e-16 # 16 で良いのか？ 16はかなり小さい（数値誤差に埋もれやすい） 1e-4, 1e-3, 1e-2 などで実験
 def f1c(data_x, data_y, coef):
     #calc 1/2M||X0 - y||^2
     #np.matmul(data_x, coef.T) = X0
@@ -87,17 +88,17 @@ def f1c(data_x, data_y, coef):
     for _ in data_x:
         M += 1
     g = (np.linalg.norm((np.matmul(data_x, coef.T) - data_y).T, ord = 2)**2)/(2*M)
-    return g + 1e-16 * f3(coef)
+    return g + eps * f3(coef)
 
 def f2c(coef):
     #calc |0|
     X = np.array(coef)
-    return np.linalg.norm(X, ord = 1) + 1e-16 * f3(coef)
+    return np.linalg.norm(X, ord = 1) + eps * f3(coef)
 
 def f3c(coef):
     #calc 1/2||0||^2
     X = np.array(coef)
-    return (np.linalg.norm(X, ord = 2)**2)/2 + 1e-16 * f3(coef)
+    return (np.linalg.norm(X, ord = 2)**2)/2 + eps * f3(coef)
 
 def calc_PF():
     data_set_x = np.loadtxt("datax.csv")
