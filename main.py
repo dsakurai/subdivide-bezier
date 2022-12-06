@@ -3,10 +3,6 @@
 # Press Double ⇧ to search everywhere for classes, files, tool windows, actions, and settings.
 import numpy as np
 import pandas as pd
-from sklearn.linear_model import ElasticNet
-import torch
-import torch_bsf
-import plotly.express as px
 import time
 import random
 
@@ -55,6 +51,9 @@ def trans_param():
     regcoef_df.to_csv("regcoef.csv",header=False, index=False, sep="\t")
 
 def calc_EN():
+
+    from sklearn.linear_model import ElasticNet
+
     data_set_x = np.loadtxt("datax.csv")
     data_set_y = np.loadtxt("datay.csv")
     data_x = pd.DataFrame(data_set_x)
@@ -229,68 +228,74 @@ def make_t(w, lv, pos):
 
     #return e, m
 
-start_time = time.perf_counter()
+if __name__ == '__main__':
 
-w = make_w()
-trans_param()
-calc_EN()
-f = calc_PF()
-#make_data_file()
+    import plotly.express as px
+    import torch
+    import torch_bsf
 
-N_DATA = len(w)
-N_TEST = N_DATA // 10
-N_TRAIN = N_DATA - N_TEST
+    start_time = time.perf_counter()
 
-data_indices = list(len(w))
-test_indices = random.sample(data_indeices,N_TEST)
-train_indices = [i for i in data_ndices if i not in test_indices]
+    w = make_w()
+    trans_param()
+    calc_EN()
+    f = calc_PF()
+    #make_data_file()
 
-t = make(w)
-tt = []
-ff = []
-for i in train_indices:
-    tt.append(t[i])
-    ff.append(f[i])
-t = torch.tensor(t)
-f = torch.tensor(f)
-tt = torch.tensor(tt)
-ff = torch.tensor(ff)
+    N_DATA = len(w)
+    N_TEST = N_DATA // 10
+    N_TRAIN = N_DATA - N_TEST
 
-b = torch_bsf.fit(params= tt, values= ff, degree= d)
+    data_indices = list(len(w))
+    test_indices = random.sample(data_indeices,N_TEST)
+    train_indices = [i for i in data_ndices if i not in test_indices]
 
-test_error = 0
-for i in test_indices:
-    test_error += np.square(f[i].detach().numpy() - b(t)[i].detach().numpy())
-test_error = np.mean(test_error)
+    t = make(w)
+    tt = []
+    ff = []
+    for i in train_indices:
+        tt.append(t[i])
+        ff.append(f[i])
+    t = torch.tensor(t)
+    f = torch.tensor(f)
+    tt = torch.tensor(tt)
+    ff = torch.tensor(ff)
 
-################
-Llist_ave = []
-Llist_max = []
-Llist_time = []
+    b = torch_bsf.fit(params= tt, values= ff, degree= d)
 
-for i in range(1):
-    list_ave = []
-    list_max = []
-    list_time = []
-    for j in range(15):
-        d = j + 1
-        start = time.perf_counter()
-        e, m = bs_fit(d)
-        end = time.perf_counter()
-        tm = end - start
-        list_ave.append(e)
-        list_max.append(m)
-        list_time.append(tm)
-    Llist_ave.append(list_ave)
-    Llist_max.append(list_max)
-    Llist_time.append(list_time)
-adf = pd.DataFrame(Llist_ave)
-mdf = pd.DataFrame(Llist_max)
-tdf = pd.DataFrame(Llist_time)
-adf.to_csv("ave_err.csv",header=False, index=False, sep="\t")
-mdf.to_csv("max_err.csv",header=False, index=False, sep="\t")
-tdf.to_csv("calc_time.csv",header=False, index=False, sep="\t")
-end_time = time.perf_counter()
-print(end_time - start_time)
+    test_error = 0
+    for i in test_indices:
+        test_error += np.square(f[i].detach().numpy() - b(t)[i].detach().numpy())
+    test_error = np.mean(test_error)
 
-# See PyCharm help at https://www.jetbrains.com/help/pycharm/
+    ################
+    Llist_ave = []
+    Llist_max = []
+    Llist_time = []
+
+    for i in range(1):
+        list_ave = []
+        list_max = []
+        list_time = []
+        for j in range(15):
+            d = j + 1
+            start = time.perf_counter()
+            e, m = bs_fit(d)
+            end = time.perf_counter()
+            tm = end - start
+            list_ave.append(e)
+            list_max.append(m)
+            list_time.append(tm)
+        Llist_ave.append(list_ave)
+        Llist_max.append(list_max)
+        Llist_time.append(list_time)
+    adf = pd.DataFrame(Llist_ave)
+    mdf = pd.DataFrame(Llist_max)
+    tdf = pd.DataFrame(Llist_time)
+    adf.to_csv("ave_err.csv",header=False, index=False, sep="\t")
+    mdf.to_csv("max_err.csv",header=False, index=False, sep="\t")
+    tdf.to_csv("calc_time.csv",header=False, index=False, sep="\t")
+    end_time = time.perf_counter()
+    print(end_time - start_time)
+
+    # See PyCharm help at https://www.jetbrains.com/help/pycharm/
