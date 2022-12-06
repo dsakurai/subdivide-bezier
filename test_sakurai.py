@@ -3,8 +3,11 @@ from main import make_w
 
 
 def test_make_w():
-    global answer_default
-    assert make_w(triangle=[]) == answer_default # Largest triangle
+    global answer_default, answer_resolution_3
+    assert make_w()               == answer_default # Largest triangle
+    assert make_w(resolution = 3) == answer_resolution_3
+
+answer_resolution_3 = [[1.0, 0.0, 0.0], [0.6666666666666666, 0.3333333333333333, 0.0], [0.6666666666666666, 0.0, 0.3333333333333333], [0.3333333333333333, 0.6666666666666666, 0.0], [0.3333333333333333, 0.3333333333333333, 0.3333333333333333], [0.3333333333333333, 0.0, 0.6666666666666666], [0.0, 1.0, 0.0], [0.0, 0.6666666666666666, 0.3333333333333333], [0.0, 0.3333333333333333, 0.6666666666666666], [0.0, 0.0, 1.0]]
 
 answer_default = [[1.0, 0.0, 0.0],
  [0.99, 0.01, 0.0],

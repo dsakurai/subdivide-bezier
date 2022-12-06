@@ -6,18 +6,21 @@ import pandas as pd
 import time
 import random
 
-def make_w(triangle: [int]):
-    w1 = 100
+def make_w(
+        resolution: int = 100,
+        triangle: [int] = [] # default: largest triangle
+        ):
+    w1 = resolution
     list = []
-    for _ in range(101): #len([0,1,2,...,100])=101
-        w2 = 100 - w1
+    for _ in range(resolution+1): #len([0,1,2,...,100])=101
+        w2 = resolution - w1
         w3 = 0
-        for _ in range(101):
-            if w1 + w2 + w3 == 100 and w1 >= 0 and w2 >= 0 and w3 >= 0:
+        for _ in range(resolution+1):
+            if w1 + w2 + w3 == resolution and w1 >= 0 and w2 >= 0 and w3 >= 0:
                 list2 = []
-                list2.append(w1/100)
-                list2.append(w2/100)
-                list2.append(w3/100)
+                list2.append(w1/resolution)
+                list2.append(w2/resolution)
+                list2.append(w3/resolution)
                 list.append(list2)
             w2 -= 1
             w3 += 1
