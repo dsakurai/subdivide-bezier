@@ -8,18 +8,16 @@ import torch
 import torch_bsf
 import plotly.express as px
 import time
+import random
 
-def make_w(num):
+def make_w(lv, pos):
     w1 = 100
     list = []
     for _ in range(101): #len([0,1,2,...,100])=101
         w2 = 100 - w1
         w3 = 0
         for _ in range(101):
-            #if w1 + w2 + w3 == 100 and w2 >= 0 and w1 >= 0 and w2 < w1*4+3:  #*num/(100 - num):
-            #if w1 + w2 + w3 == 100 and w2 >= 0 and w1 >= 0 and w2 >= w1*4+3:  #*num/(100 - num):
-            if w1 + w2 + w3 == 100 and w2 >= 0 and w1 >= 75:
-            #if w1 + w2 + w3 == 100 and w2 >= 0 and w1 >= 0 and w2 <= w1*num/(100 - num):
+            if w1 + w2 + w3 == 100 and w1 >= 0 and w2 >= 0 and w3 >= 0:
                 list2 = []
                 list2.append(w1/100)
                 list2.append(w2/100)
@@ -30,6 +28,7 @@ def make_w(num):
         w1 -= 1
     df = pd.DataFrame(list)
     df.to_csv("testdata.csv",header=False, index=False, sep="\t")
+    return list
 
 def calc_alpha(w0, eps):
     if w0 == 0:
@@ -45,7 +44,7 @@ def trans_param():
     list = []
     for i in data:
         list2 = []
-        e = 1e-16 # これ小さすぎ？
+        e = 1e-4 # これ小さすぎ？
         alpha = calc_alpha(i[0], e)
         L1_ratio = calc_L1_ratio(i[0], i[1], e)
         list2.append(alpha)
@@ -79,7 +78,7 @@ def calc_EN():
 def f3(coef):
     X = np.array(coef)
     return np.linalg.norm(X, ord = 2)**2
-eps = 1e-16 # 16 で良いのか？ 16はかなり小さい（数値誤差に埋もれやすい） 1e-4, 1e-3, 1e-2 などで実験
+eps = 1e-4 # 16 で良いのか？ 16はかなり小さい（数値誤差に埋もれやすい） 1e-4, 1e-3, 1e-2 などで実験
 def f1c(data_x, data_y, coef):
     #calc 1/2M||X0 - y||^2
     #np.matmul(data_x, coef.T) = X0
@@ -121,6 +120,7 @@ def calc_PF():
 
     df = pd.DataFrame(list)
     df.to_csv("pareto_front.csv",header=False, index=False, sep="\t")
+    return list
 
 def make_data_file():
     pareto_set = np.loadtxt("elastic_net.csv")
@@ -138,7 +138,56 @@ def make_data_file():
     df = pd.DataFrame(list)
     df.to_csv("dataf123.csv",header=False, index=False, sep="\t")
 
-def bs_fit(d):
+def make_t(w, lv, pos):
+    tlist = []
+    data = w
+    if lv == 0:
+        return data
+    if pos == 0:
+        for i in data:
+            tlist2 = []
+            t1 = (i[0] - 0.5)*2
+            t2 = i[1]*2
+            t3 = i[2]*2
+            tlist2.append(t1)
+            tlist2.append(t2)
+            tlist2.append(t2)
+            tlist.append(tlist2)
+    elif pos ==  2:
+        for i in data:
+            tlist2 = []
+            t1 = i[0]*2
+            t2 = (i[1] - 0.5)*2
+            t3 = i[2]*2
+            tlist2.append(t1)
+            tlist2.append(t2)
+            tlist2.append(t2)
+            tlist.append(tlist2)
+    elif pos == 3:
+        for i in data:
+            tlist2 = []
+            t1 = i[0]*2
+            t2 = i[1]*2
+            t3 = (i[2] - 0.5)*2
+            tlist2.append(t1)
+            tlist2.append(t2)
+            tlist2.append(t2)
+            tlist.append(tlist2)
+    elif pos == 4:
+        for i in data:
+            tlist2 = []
+            t1 = (1 - i[2])*2
+            t2 = (1 - i[2])*2
+            t3 = (1 - i[2])*2
+            tlist2.append(t1)
+            tlist2.append(t2)
+            tlist2.append(t2)
+            tlist.append(tlist2)
+    df = pd.Dataframe(tlist)
+    df.tocsv("datat123.csv", header=False, index=False, sep="\t")
+    return tlist
+
+#def bs_fit(d):
     ts = np.loadtxt("testdata.csv")
     xs = np.loadtxt("dataf123.csv")
 
@@ -178,18 +227,43 @@ def bs_fit(d):
     fig = px.scatter_3d(df, x='f1', y='f2', z='f3')
     fig.show()
 
-    return e, m
+    #return e, m
 
-cut_rate = 80
-Mode = 0 # Mode = 0 not cut, 1 cut left, 2 cut right
 start_time = time.perf_counter()
 
-make_w(cut_rate)
+w = make_w()
 trans_param()
 calc_EN()
-calc_PF()
-make_data_file()
+f = calc_PF()
+#make_data_file()
 
+N_DATA = len(w)
+N_TEST = N_DATA // 10
+N_TRAIN = N_DATA - N_TEST
+
+data_indices = list(len(w))
+test_indices = random.sample(data_indeices,N_TEST)
+train_indices = [i for i in data_ndices if i not in test_indices]
+
+t = make(w)
+tt = []
+ff = []
+for i in train_indices:
+    tt.append(t[i])
+    ff.append(f[i])
+t = torch.tensor(t)
+f = torch.tensor(f)
+tt = torch.tensor(tt)
+ff = torch.tensor(ff)
+
+b = torch_bsf.fit(params= tt, values= ff, degree= d)
+
+test_error = 0
+for i in test_indices:
+    test_error += np.square(f[i].detach().numpy() - b(t)[i].detach().numpy())
+test_error = np.mean(test_error)
+
+################
 Llist_ave = []
 Llist_max = []
 Llist_time = []
