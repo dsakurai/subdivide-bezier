@@ -6,7 +6,7 @@ import pandas as pd
 import time
 import random
 
-def make_w(lv, pos):
+def make_w(triangle: [int]):
     w1 = 100
     list = []
     for _ in range(101): #len([0,1,2,...,100])=101
