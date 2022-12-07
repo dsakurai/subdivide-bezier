@@ -10,7 +10,7 @@ class Subdivision:
     triangle_0      = 0
     triangle_1      = 1
     triangle_2      = 2
-    triangle_inside = 3
+    triangle_center = 3
 
 eps = 0.0000000001
 
@@ -28,7 +28,7 @@ def in_triangle(triangle: [int], w: [float]):
             # yes
             return 0.5 <= w[t] <= 1.0
         else:
-            if t != Subdivision.triangle_inside : raise Exception("Bad triangle")
+            if t != Subdivision.triangle_center : raise Exception("Bad triangle")
             return \
                     (not in_triangle(triangle=triangle[:-1]+[Subdivision.triangle_0], w=w)) and \
                     (not in_triangle(triangle=triangle[:-1]+[Subdivision.triangle_1], w=w)) and \
