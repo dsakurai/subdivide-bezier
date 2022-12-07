@@ -12,9 +12,17 @@ class Subdivision:
     triangle_2      = 2
     triangle_inside = 3
 
+eps = 0.0000000001
+
 def in_triangle(triangle: [int], w: [float]):
+
+    if abs(sum(w) - 1.0 ) > eps: raise Exception("Sum of w coordinates is not 1.")
+
     if triangle == []:
-        return 0.0 <= w[0] and 0.0 <= w[1] and 0.0 <= w[2] and sum(w) <= 1.0
+        return 0.0 <= w[0] and 0.0 <= w[1] and 0.0 <= w[2]
+
+    if triangle == [0]:
+        return 0.5 <= w[0] <= 1
 
 
 def make_w(

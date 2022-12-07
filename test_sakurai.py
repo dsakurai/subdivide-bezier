@@ -2,8 +2,14 @@ import pytest
 from main import make_w, in_triangle
 
 def test_in_triangle():
-    assert in_triangle(triangle=[], w=[0.0, 0.0, 0.0])
-    assert not in_triangle(triangle=[], w=[1.1, 0.0, 0.0])
+    # largest triangle
+    assert in_triangle(triangle=[], w=[1., 0.0, 0.0])
+
+    # left corner
+    assert in_triangle(triangle=[0], w=[1., 0.0, 0.0])
+    assert not in_triangle(triangle=[0], w=[0., 1.0, 0.0])
+    assert not in_triangle(triangle=[0], w=[0., 0.0, 1.0])
+    assert not in_triangle(triangle=[0], w=[1/3, 1/3, 1/3])
 
 
 def test_make_w():
