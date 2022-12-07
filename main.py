@@ -41,8 +41,6 @@ def make_w(
             w2 -= 1
             w3 += 1
         w1 -= 1
-    df = pd.DataFrame(list)
-    df.to_csv("testdata.csv",header=False, index=False, sep="\t")
     return list
 
 def calc_alpha(w0, eps):
@@ -256,6 +254,11 @@ if __name__ == '__main__':
     start_time = time.perf_counter()
 
     w = make_w()
+
+    # Save to file
+    df = pd.DataFrame(w)
+    df.to_csv("testdata.csv",header=False, index=False, sep="\t")
+
     trans_param()
     calc_EN()
     f = calc_PF()
