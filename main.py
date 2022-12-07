@@ -21,32 +21,31 @@ def in_triangle(triangle: [int], w: [float]):
     if triangle == []:
         return 0.0 <= w[0] and 0.0 <= w[1] and 0.0 <= w[2]
 
-    if len(triangle) == 1:
-        t = triangle[-1]  # triangle position
-        # in corner?
-        if t in [Subdivision.triangle_0, Subdivision.triangle_1, Subdivision.triangle_2]:
-            # yes
+    t = triangle[-1]  # triangle position
+    # in corner?
+    if t in [Subdivision.triangle_0, Subdivision.triangle_1, Subdivision.triangle_2]:
+        # yes
 
-            upper_triangle = triangle[:-1]
-            num_flips = upper_triangle.count(Subdivision.triangle_center)
-            flipped = (num_flips % 2 == 1)
+        upper_triangle = triangle[:-1]
+        num_flips = upper_triangle.count(Subdivision.triangle_center)
+        flipped = (num_flips % 2 == 1)
 
-            def condition(triangle):
-                ret = 0.0
-                level = len(triangle)
-                for lev in range(level):
-                    if triangle[lev] == t:
-                        ret += 1/2**lev
-                return ret
+        def condition(triangle):
+            ret = 0.0
+            level = len(triangle)
+            for lev in range(level):
+                if triangle[lev] == t:
+                    ret += 1/2**lev
+            return ret
 
-            if not flipped: return condition(triangle) <= w[t]
-            else:           return condition(triangle) >= w[t]
-        else:
-            if t != Subdivision.triangle_center : raise Exception("Bad triangle")
-            return \
-                    (not in_triangle(triangle=triangle[:-1]+[Subdivision.triangle_0], w=w)) and \
-                    (not in_triangle(triangle=triangle[:-1]+[Subdivision.triangle_1], w=w)) and \
-                    (not in_triangle(triangle=triangle[:-1]+[Subdivision.triangle_2], w=w))
+        if not flipped: return condition(triangle) <= w[t]
+        else:           return condition(triangle) >= w[t]
+    else:
+        if t != Subdivision.triangle_center : raise Exception("Bad triangle")
+        return \
+                (not in_triangle(triangle=triangle[:-1]+[Subdivision.triangle_0], w=w)) and \
+                (not in_triangle(triangle=triangle[:-1]+[Subdivision.triangle_1], w=w)) and \
+                (not in_triangle(triangle=triangle[:-1]+[Subdivision.triangle_2], w=w))
 
 
 def make_w(
