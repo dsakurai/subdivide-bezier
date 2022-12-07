@@ -14,7 +14,7 @@ class Subdivision:
 
 eps = 0.0000000001
 
-def in_triangle(triangle: [int], w: [float]):
+def in_triangle_(triangle: [int], w: [float]):
 
     if abs(sum(w) - 1.0 ) > eps: raise Exception("Sum of w coordinates is not 1.")
 
@@ -30,25 +30,32 @@ def in_triangle(triangle: [int], w: [float]):
         num_flips = upper_triangle.count(Subdivision.triangle_center)
         flipped = (num_flips % 2 == 1)
 
-        def condition(triangle: [int]):
-            ret = 0.0
-            for i, tri in enumerate(triangle):
-                level = i + 1
-                if tri == t:
-                    ret += 1/2**level
-                else:
-                    ret -= 1/2 ** level
-            return ret
+        def condition(level = 1, ret = 0.5):
+            # binary search inside [0, 1]
+            if len(triangle) == level: return ret
 
-        if not flipped: return condition(triangle) <= w[t]
-        else:           return condition(triangle) >= w[t]
+            tri = triangle[level-1]
+            if tri == t:
+                ret += 1 / 2 ** (level+1)
+            else:
+                ret -= 1 / 2 ** (level+1)
+
+            return condition(level=level+1, ret=ret)
+
+        if not flipped: return condition() <= w[t]
+        else:           return condition() >= w[t]
     else:
         if t != Subdivision.triangle_center : raise Exception("Bad triangle")
         return \
-                (not in_triangle(triangle=triangle[:-1]+[Subdivision.triangle_0], w=w)) and \
-                (not in_triangle(triangle=triangle[:-1]+[Subdivision.triangle_1], w=w)) and \
-                (not in_triangle(triangle=triangle[:-1]+[Subdivision.triangle_2], w=w))
+                (not in_triangle_(triangle=triangle[:-1]+[Subdivision.triangle_0], w=w)) and \
+                (not in_triangle_(triangle=triangle[:-1]+[Subdivision.triangle_1], w=w)) and \
+                (not in_triangle_(triangle=triangle[:-1]+[Subdivision.triangle_2], w=w))
 
+def in_triangle(triangle: [int], w: [float]):
+    for lev in range(len(triangle) + 1):
+        if not in_triangle_(triangle[0:lev], w):
+            return False
+    return True
 
 def make_w(
         resolution: int = 100,
