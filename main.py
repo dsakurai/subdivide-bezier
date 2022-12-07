@@ -27,7 +27,7 @@ def make_w(
         ...
     """
     w1 = resolution
-    list = []
+    ls = []
     for _ in range(resolution+1): #len([0,1,2,...,100])=101
         w2 = resolution - w1
         w3 = 0
@@ -37,11 +37,11 @@ def make_w(
                 list2.append(w1/resolution)
                 list2.append(w2/resolution)
                 list2.append(w3/resolution)
-                list.append(list2)
+                ls.append(list2)
             w2 -= 1
             w3 += 1
         w1 -= 1
-    return list
+    return ls
 
 def calc_alpha(w0, eps):
     if w0 == 0:
