@@ -1,5 +1,9 @@
 import pytest
-from main import make_w
+from main import make_w, in_triangle
+
+def test_in_triangle():
+    assert in_triangle(triangle=[], w=[0.0, 0.0, 0.0])
+    assert not in_triangle(triangle=[], w=[1.1, 0.0, 0.0])
 
 
 def test_make_w():

@@ -12,6 +12,11 @@ class Subdivision:
     triangle_2      = 2
     triangle_inside = 3
 
+def in_triangle(triangle: [int], w: [float]):
+    if triangle == []:
+        return 0.0 <= w[0] and 0.0 <= w[1] and 0.0 <= w[2] and sum(w) <= 1.0
+
+
 def make_w(
         resolution: int = 100,
         triangle: [int] = [] # default: largest triangle
