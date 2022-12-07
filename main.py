@@ -36,6 +36,8 @@ def in_triangle(triangle: [int], w: [float]):
                 level = i + 1
                 if tri == t:
                     ret += 1/2**level
+                else:
+                    ret -= 1/2 ** level
             return ret
 
         if not flipped: return condition(triangle) <= w[t]
