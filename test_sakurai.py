@@ -55,9 +55,9 @@ def test_in_triangle():
 
     # triangle 01
     assert not in_triangle_(triangle=[0,1], w=[1., 0.0, 0.0])
-    assert not in_triangle_(triangle=[0,1], w=[0., 1.0, 0.0])
-    assert not in_triangle_(triangle=[0,1], w=[0., 0.0, 1.0])
-    assert not in_triangle_(triangle=[0,1], w=[1/3, 1/3, 1/3])
+    assert     in_triangle_(triangle=[0,1], w=[0.5, 0.5, 0.0])
+    assert not in_triangle_(triangle=[0,1], w=[0.5, 0.0, 0.5])
+    assert     in_triangle_(triangle=[0,1], w=[0.6, 0.3, 0.1])
 
 def test_make_w():
     global answer_default, answer_resolution_3
