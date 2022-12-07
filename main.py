@@ -6,10 +6,26 @@ import pandas as pd
 import time
 import random
 
+class Subdivision:
+    triangle_0      = 0
+    triangle_1      = 1
+    triangle_2      = 2
+    triangle_inside = 3
+
 def make_w(
         resolution: int = 100,
         triangle: [int] = [] # default: largest triangle
         ):
+    """
+    Return [(w1, w2, w3)].
+    :param resolution: number of points along each edge of the (largest, i.e. global) triangle
+    :param triangle: [...].
+        The smaller triangle within the largest one. This is an enum from `Subdivision`.
+        The largest triangle is [].
+        The left corner of the first subdivision is [Subdivision.triangle_0]
+        The right corner of the 2nd subdivision in the left corner of the 1st is [Subdivision.triangle_0, Subdivision.triangle_1],
+        ...
+    """
     w1 = resolution
     list = []
     for _ in range(resolution+1): #len([0,1,2,...,100])=101
