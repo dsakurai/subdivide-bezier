@@ -69,8 +69,14 @@ def in_triangle_(triangle: [int], w: [float]):
                 (not in_triangle_(triangle=triangle[:-1]+[Subdivision.triangle_2], w=w))
 
 def in_triangle(triangle: [int], w: [float]):
-    for lev in range(len(triangle) + 1):
-        if not in_triangle_(triangle[0:lev], w):
+
+    def outside (triangle, w):
+        return not in_triangle_(triangle, w)
+
+    levels = range(len(triangle) + 1)
+
+    for lev in levels:
+        if outside(triangle[0:lev], w):
             return False
     return True
 
