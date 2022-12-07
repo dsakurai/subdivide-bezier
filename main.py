@@ -21,8 +21,18 @@ def in_triangle(triangle: [int], w: [float]):
     if triangle == []:
         return 0.0 <= w[0] and 0.0 <= w[1] and 0.0 <= w[2]
 
-    if triangle == [0]:
-        return 0.5 <= w[0] <= 1
+    if len(triangle) == 1:
+        t = triangle[-1]  # triangle position
+        # in corner?
+        if t in [Subdivision.triangle_0, Subdivision.triangle_1, Subdivision.triangle_2]:
+            # yes
+            return 0.5 <= w[t] <= 1.0
+        else:
+            if t != Subdivision.triangle_inside : raise Exception("Bad triangle")
+            return \
+                    (not in_triangle(triangle=triangle[:-1]+[Subdivision.triangle_0], w=w)) and \
+                    (not in_triangle(triangle=triangle[:-1]+[Subdivision.triangle_1], w=w)) and \
+                    (not in_triangle(triangle=triangle[:-1]+[Subdivision.triangle_2], w=w))
 
 
 def make_w(
