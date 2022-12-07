@@ -26,7 +26,21 @@ def in_triangle(triangle: [int], w: [float]):
         # in corner?
         if t in [Subdivision.triangle_0, Subdivision.triangle_1, Subdivision.triangle_2]:
             # yes
-            return 0.5 <= w[t] <= 1.0
+
+            upper_triangle = triangle[:-1]
+            num_flips = upper_triangle.count(Subdivision.triangle_center)
+            flipped = (num_flips % 2 == 1)
+
+            def condition(triangle):
+                ret = 0.0
+                level = len(triangle)
+                for lev in range(level):
+                    if triangle[lev] == t:
+                        ret += 1/2**lev
+                return ret
+
+            if not flipped: return condition(triangle) <= w[t]
+            else:           return condition(triangle) >= w[t]
         else:
             if t != Subdivision.triangle_center : raise Exception("Bad triangle")
             return \
