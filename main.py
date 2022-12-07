@@ -30,12 +30,12 @@ def in_triangle(triangle: [int], w: [float]):
         num_flips = upper_triangle.count(Subdivision.triangle_center)
         flipped = (num_flips % 2 == 1)
 
-        def condition(triangle):
+        def condition(triangle: [int]):
             ret = 0.0
-            level = len(triangle)
-            for lev in range(level):
-                if triangle[lev] == t:
-                    ret += 1/2**lev
+            for i, tri in enumerate(triangle):
+                level = i + 1
+                if tri == t:
+                    ret += 1/2**level
             return ret
 
         if not flipped: return condition(triangle) <= w[t]
@@ -355,5 +355,3 @@ if __name__ == '__main__':
     tdf.to_csv("calc_time.csv",header=False, index=False, sep="\t")
     end_time = time.perf_counter()
     print(end_time - start_time)
-
-    # See PyCharm help at https://www.jetbrains.com/help/pycharm/
