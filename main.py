@@ -15,6 +15,14 @@ class Subdivision:
 eps = 0.0000000001
 
 def in_triangle_(triangle: [int], w: [float]):
+    """
+    Check if the point `w` is in the specified `triangle`.
+    Presumption: in_triangle() for higher level all returns True.
+
+    :param triangle: hierarchy of triangles
+    :param w: barycentric coordinates of the point.
+    :return: True / False
+    """
 
     if abs(sum(w) - 1.0 ) > eps: raise Exception("Sum of w coordinates is not 1.")
 
@@ -22,28 +30,37 @@ def in_triangle_(triangle: [int], w: [float]):
         return 0.0 <= w[0] and 0.0 <= w[1] and 0.0 <= w[2]
 
     t = triangle[-1]  # triangle position
-    # in corner?
+    # in a corner triangle?
     if t in [Subdivision.triangle_0, Subdivision.triangle_1, Subdivision.triangle_2]:
         # yes
 
+        # The triangle in the upper level of the hierarchy
         upper_triangle = triangle[:-1]
-        num_flips = upper_triangle.count(Subdivision.triangle_center)
-        flipped = (num_flips % 2 == 1)
 
-        def condition(level = 1, ret = 0.5):
+        # Number of flips in the triangle
+        def flipped():
+            num_flips = upper_triangle.count(Subdivision.triangle_center)
+            return num_flips % 2 == 1
+
+        def boundary(
+                level = 1, # hierarchical level of the triangle subdivision
+                bnd = 0.5  # return value (boundary of the check)
+        ):
+            """ Value of w. To decide whether w is in this corner triangle, we check whether w is larger (or smaller) than this boundary value. """
+
             # binary search inside [0, 1]
-            if len(triangle) == level: return ret
+            if level == len(triangle): return bnd
 
             tri = triangle[level-1]
             if tri == t:
-                ret += 1 / 2 ** (level+1)
+                bnd += 1 / 2 ** (level + 1) # move left
             else:
-                ret -= 1 / 2 ** (level+1)
+                bnd -= 1 / 2 ** (level + 1) # move right
 
-            return condition(level=level+1, ret=ret)
+            return boundary(level=level+1, bnd=bnd)
 
-        if not flipped: return condition() <= w[t]
-        else:           return condition() >= w[t]
+        if not flipped(): return w[t] >= boundary()
+        else:             return w[t] <= boundary()
     else:
         if t != Subdivision.triangle_center : raise Exception("Bad triangle")
         return \
