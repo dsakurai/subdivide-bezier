@@ -14,48 +14,60 @@ class Subdivision:
 
 eps = 0.0000000001
 
-def in_triangle_(triangle: [int], w: [float]):
+def in_triangle_(smallest_triangle: [int], w: [float]):
     """
     Check if the point `w` is in the specified `triangle`.
     Presumption: in_triangle() for higher level all returns True.
 
-    :param triangle: hierarchy of triangles
+    :param smallest_triangle: hierarchy of triangles
     :param w: barycentric coordinates of the point.
     :return: True / False
     """
 
     if abs(sum(w) - 1.0 ) > eps: raise Exception("Sum of w coordinates is not 1.")
 
-    if triangle == []:
+    if smallest_triangle == []:
         return 0.0 <= w[0] and 0.0 <= w[1] and 0.0 <= w[2]
 
-    t = triangle[-1]  # triangle position
+    t = smallest_triangle[-1]  # triangle position
     # in a corner triangle?
     if t in [Subdivision.triangle_0, Subdivision.triangle_1, Subdivision.triangle_2]:
         # yes
 
         # The triangle in the upper level of the hierarchy
-        upper_triangle = triangle[:-1]
+        upper_triangle = smallest_triangle[:-1]
 
         # Number of flips in the triangle
-        def flipped():
+        def flipped(upper_triangle=upper_triangle):
             num_flips = upper_triangle.count(Subdivision.triangle_center)
             return num_flips % 2 == 1
 
         def boundary(
                 level = 1, # hierarchical level of the triangle subdivision
-                bnd = 0.5  # return value (boundary of the check)
+                bnd = 0.5,  # return value (boundary of the check)
+                smallest_triangle = smallest_triangle # the smallest triangle
         ):
-            """ Value of w. To decide whether w is in this corner triangle, we check whether w is larger (or smaller) than this boundary value. """
+            """
+                Threshold of w for user-specified level of the triangle subdivision.
+                To decide whether w is in this corner triangle, we check whether w is larger (or smaller) than this boundary value.
+            """
 
             # binary search inside [0, 1]
-            if level == len(triangle): return bnd
+            if level == len(smallest_triangle): return bnd
 
-            tri = triangle[level-1]
-            if tri == t:
-                bnd += 1 / 2 ** (level + 1) # move left
-            else:
-                bnd -= 1 / 2 ** (level + 1) # move right
+            tri = smallest_triangle[level - 1]
+            fl = flipped(smallest_triangle[:level-1])
+            if tri == t: # check inside?
+                # yes
+                if not fl:
+                    bnd += 1 / 2 ** (level + 1) # move left
+                else:
+                    bnd -= 1 / 2 ** (level + 1) # move right
+            else: # no => check outside
+                if not fl:
+                    bnd -= 1 / 2 ** (level + 1) # move right
+                else:
+                    bnd += 1 / 2 ** (level + 1) # move left
 
             return boundary(level=level+1, bnd=bnd)
 
@@ -64,9 +76,9 @@ def in_triangle_(triangle: [int], w: [float]):
     else:
         if t != Subdivision.triangle_center : raise Exception("Bad triangle")
         return \
-                (not in_triangle_(triangle=triangle[:-1]+[Subdivision.triangle_0], w=w)) and \
-                (not in_triangle_(triangle=triangle[:-1]+[Subdivision.triangle_1], w=w)) and \
-                (not in_triangle_(triangle=triangle[:-1]+[Subdivision.triangle_2], w=w))
+                (not in_triangle_(smallest_triangle=smallest_triangle[:-1] + [Subdivision.triangle_0], w=w)) and \
+                (not in_triangle_(smallest_triangle=smallest_triangle[:-1] + [Subdivision.triangle_1], w=w)) and \
+                (not in_triangle_(smallest_triangle=smallest_triangle[:-1] + [Subdivision.triangle_2], w=w))
 
 def in_triangle(triangle: [int], w: [float]):
 
