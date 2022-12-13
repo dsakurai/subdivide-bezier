@@ -59,6 +59,112 @@ def test_in_triangle():
     assert not in_triangle_(triangle=[0,1], w=[0.5, 0.0, 0.5])
     assert     in_triangle_(triangle=[0,1], w=[0.6, 0.3, 0.1])
 
+    # triangle 02
+    assert not in_triangle_(triangle=[0,2], w=[1., 0.0, 0.0])
+    assert not in_triangle_(triangle=[0,2], w=[0.5, 0.5, 0.0])
+    assert     in_triangle_(triangle=[0,2], w=[0.5, 0.0, 0.5])
+    assert not in_triangle_(triangle=[0,2], w=[0.6, 0.3, 0.1])
+
+    # triangle 03
+    assert not in_triangle_(triangle=[0,3], w=[1., 0.0, 0.0])
+    assert not in_triangle_(triangle=[0,3], w=[0.5, 0.5, 0.0])
+    assert not in_triangle_(triangle=[0,3], w=[0.5, 0.0, 0.5])
+    assert     in_triangle_(triangle=[0,3], w=[0.6, 0.2, 0.2])
+
+    # triangle 30
+    assert     in_triangle_(triangle=[3,0], w=[0.0, 0.5, 0.5])
+    assert not in_triangle_(triangle=[3,0], w=[0.5, 0.5, 0.0])
+    assert not in_triangle_(triangle=[3,0], w=[0.5, 0.0, 0.5])
+    assert not in_triangle_(triangle=[3,0], w=[1/3, 1/3, 1/3])
+
+    # triangle 000
+    assert not in_triangle_(triangle=[0,0,0], w=[0.75, 0.0, 0.25])
+    assert     in_triangle_(triangle=[0,0,0], w=[1.0, 0.0, 0.0])
+    assert not in_triangle_(triangle=[0,0,0], w=[0.75, 0.25, 0.0])
+    assert not in_triangle_(triangle=[0,0,0], w=[0.8, 0.1, 0.1])
+
+    # triangle 001
+    assert not in_triangle_(triangle=[0,0,1], w=[0.75, 0.0, 0.25])
+    assert not in_triangle_(triangle=[0,0,1], w=[1.0, 0.0, 0.0])
+    assert     in_triangle_(triangle=[0,0,1], w=[0.75, 0.25, 0.0])
+    assert not in_triangle_(triangle=[0,0,1], w=[0.8, 0.1, 0.1])
+
+    # triangle 003
+    assert not in_triangle_(triangle=[0,0,3], w=[0.75, 0.0, 0.25])
+    assert not in_triangle_(triangle=[0,0,3], w=[1.0, 0.0, 0.0])
+    assert not in_triangle_(triangle=[0,0,3], w=[0.75, 0.25, 0.0])
+    assert     in_triangle_(triangle=[0,0,3], w=[0.8, 0.1, 0.1])
+
+    # triangle 011
+    assert not in_triangle_(triangle=[0,1,1], w=[0.75, 0.25, 0.0])
+    assert     in_triangle_(triangle=[0,1,1], w=[0.5, 0.5, 0.0])
+    assert not in_triangle_(triangle=[0,1,1], w=[0.75, 0.25, 0.0])
+    assert not in_triangle_(triangle=[0,1,1], w=[0.6, 0.3, 0.1])
+
+    # triangle 012
+    assert not in_triangle_(triangle=[0,1,2], w=[0.75, 0.25, 0.0])
+    assert not in_triangle_(triangle=[0,1,2], w=[0.5, 0.5, 0.0])
+    assert     in_triangle_(triangle=[0,1,2], w=[0.5, 0.25, 0.25])
+    assert not in_triangle_(triangle=[0,1,2], w=[0.6, 0.3, 0.1])
+    assert     in_triangle_(triangle=[0,1,2], w=[0.6, 0.2, 0.2])
+
+    # triangle 013
+    assert not in_triangle_(triangle=[0,1,3], w=[0.75, 0.25, 0.0])
+    assert not in_triangle_(triangle=[0,1,3], w=[0.5, 0.5, 0.0])
+    assert not in_triangle_(triangle=[0,1,3], w=[0.5, 0.25, 0.25])
+    assert     in_triangle_(triangle=[0,1,3], w=[0.6, 0.3, 0.1])
+    assert not in_triangle_(triangle=[0,1,3], w=[0.6, 0.2, 0.2])
+
+    # triangle 030
+    assert not in_triangle_(triangle=[0,3,0], w=[0.75, 0.25, 0.0])
+    assert not in_triangle_(triangle=[0,3,0], w=[0.75, 0.0, 0.25])
+    assert     in_triangle_(triangle=[0,3,0], w=[0.5, 0.25, 0.25])
+    assert not in_triangle_(triangle=[0,3,0], w=[0.7, 0.2, 0.1])
+    assert not in_triangle_(triangle=[0,3,0], w=[0.7, 0.1, 0.2])
+
+    # triangle 031
+    assert not in_triangle_(triangle=[0,3,1], w=[0.75, 0.25, 0.0])
+    assert     in_triangle_(triangle=[0,3,1], w=[0.75, 0.0, 0.25])
+    assert not in_triangle_(triangle=[0,3,1], w=[0.5, 0.25, 0.25])
+    assert not in_triangle_(triangle=[0,3,1], w=[0.7, 0.2, 0.1])
+    assert     in_triangle_(triangle=[0,3,1], w=[0.7, 0.1, 0.2])
+
+    # triangle 033
+    assert not in_triangle_(triangle=[0,3,3], w=[0.75, 0.0, 0.25])
+    assert not in_triangle_(triangle=[0,3,3], w=[0.5, 0.25, 0.25])
+    assert not in_triangle_(triangle=[0,3,3], w=[0.75, 0.25, 0.0])
+    assert     in_triangle_(triangle=[0,3,3], w=[0.74, 0.13, 0.13])
+
+    # triangle 300
+    assert     in_triangle_(triangle=[3,0,0], w=[0.0, 0.5, 0.5])
+    assert not in_triangle_(triangle=[3,0,0], w=[0.25, 0.25, 0.5])
+    assert not in_triangle_(triangle=[3,0,0], w=[0.25, 0.5, 0.25])
+    assert not in_triangle_(triangle=[3,0,0], w=[0.2, 0.4, 0.4])
+
+    # triangle 301
+    assert not in_triangle_(triangle=[3,0,1], w=[0.0, 0.5, 0.5])
+    assert     in_triangle_(triangle=[3,0,1], w=[0.25, 0.25, 0.5])
+    assert not in_triangle_(triangle=[3,0,1], w=[0.25, 0.5, 0.25])
+    assert not in_triangle_(triangle=[3,0,1], w=[0.2, 0.4, 0.4])
+
+    # triangle 303
+    assert not in_triangle_(triangle=[3,0,3], w=[0.0, 0.5, 0.5])
+    assert not in_triangle_(triangle=[3,0,3], w=[0.25, 0.25, 0.5])
+    assert not in_triangle_(triangle=[3,0,3], w=[0.25, 0.5, 0.25])
+    assert     in_triangle_(triangle=[3,0,3], w=[0.2, 0.4, 0.4])
+
+    # triangle 330
+    assert     in_triangle_(triangle=[3,3,0], w=[0.5, 0.25, 0.25])
+    assert not in_triangle_(triangle=[3,3,0], w=[0.25, 0.25, 0.5])
+    assert not in_triangle_(triangle=[3,3,0], w=[0.25, 0.5, 0.25])
+    assert not in_triangle_(triangle=[3,3,0], w=[1/3, 1/3, 1/3])
+
+    # triangle 333
+    assert not in_triangle_(triangle=[3,3,3], w=[0.5, 0.25, 0.25])
+    assert not in_triangle_(triangle=[3,3,3], w=[0.25, 0.25, 0.5])
+    assert not in_triangle_(triangle=[3,3,3], w=[0.25, 0.5, 0.25])
+    assert     in_triangle_(triangle=[3,3,3], w=[1/3, 1/3, 1/3])
+
 def test_make_w():
     global answer_default, answer_resolution_3
     assert make_w()               == answer_default # Largest triangle
