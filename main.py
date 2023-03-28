@@ -357,7 +357,7 @@ def make_data_file():
     """
     pareto_set = np.loadtxt("elastic_net.csv")
     pareto_front = np.loadtxt("pareto_front.csv")
-    list = []
+    ls = []
     pareto_set_list = pareto_set.tolist()
     pareto_front_list = pareto_front.tolist()
     for i in range(len(pareto_set_list)):
@@ -366,12 +366,16 @@ def make_data_file():
             list2.append(pareto_set_list[i][j])
         for k in range(3):
             list2.append(pareto_front_list[i][k])
-        list.append(list2)
+        ls.append(list2)
     df = pd.DataFrame(list)
     df.to_csv("dataf123.csv",header=False, index=False, sep="\t")
+    return ls
 
 def bezeir_fit(
         triangle: [int] = [], # default: largest triangle
+        loop: [int] = 5, #何回ループするのか
+        max_degree: [int] = 30, #近似に用いる最大の次数
+        step: [int] = 1, #次数いくつごとに近似するか
         datax: [float] = [[1.0, 2.0, 3.0], [6.0, 5.0, 4.0], [7.0, 8.0, 9.0], [12.0, 11.0, 10.0]],
         datay: [float] = [1.0, 2.0, 3.0, 4.0]):
     """
@@ -386,12 +390,20 @@ def bezeir_fit(
     emp = [] #リストの改行用
 
     w = make_w(triangle=triangle) #参照三角形を生成する関数
-    print(w)
+    #print(w)
     coef = trans_param(w) #入力の三角形に合わせてwをElastic Netのハイパーパラメタに変換
-    print(coef)
+    #print(coef)
     pareto_set = calc_EN(datax, datay, coef)  #パレートセットを計算
     f = calc_PF(datax, datay, pareto_set) #パレートフロントを計算
-    make_data_file() #パレートセットのファイルとパレートフロントのファイルを合体
+    #make_data_file() #パレートセットのファイルとパレートフロントのファイルを合体
+    sfo = []
+    for i in range(len(pareto_set)):
+        list2 = []
+        for j in range(len(pareto_set[0])):
+            list2.append(pareto_set[i][j])
+        for k in range(3):
+            list2.append(f[i][k])
+        sfo.append(list2)
 
     N_DATA = len(w)
     N_TEST = N_DATA // 10
@@ -405,40 +417,51 @@ def bezeir_fit(
     tt = []
     ss = []
     ff = []
+    sf = []
+
     for i in train_indices:
         tt.append(t[i])
         ss.append(pareto_set[i])
         ff.append(f[i])
+        sfi = []
+        for j in range(len(pareto_set[0])):
+            sfi.append(pareto_set[i][j])
+        for k in range(3):
+            sfi.append(f[i][k])
+        sf.append(sfi)
     tt = torch.tensor(tt)
     ss = torch.tensor(ss)
     ff = torch.tensor(ff)
+    sf = torch.tensor(sf)
     t = torch.tensor(t)
     s = torch.tensor(pareto_set)
     f = torch.tensor(f)
+    sfo = torch.tensor(sfo)
     #xdf = pd.DataFrame(s[:, 3:6], columns=['01','02','03'])
-    xdf = pd.DataFrame(f, columns=['f1','f2','f3'])
-    fig = px.scatter_3d(xdf, x='f1', y='f2', z='f3')
+    #xdf = pd.DataFrame(f, columns=['f1','f2','f3'])
+    xdf = pd.DataFrame(sfo[:, 0:3], columns=['sf1','sf2','sf3'])
+    fig = px.scatter_3d(xdf, x='sf1', y='sf2', z='sf3')
     #fig.show()
 
-    for j in range(5):
+    for j in range(loop):#実験の回数
         list_ave = []
         list_time = []
-        for k in range(15):
-            d = 1 * k + 1
+        for k in range(int(max_degree/step)):#どの次数まで計算するか
+            d = step * k + step
             start = time.perf_counter()
             #b = torch_bsf.fit(params=tt, values=ss, degree=d)
-            b = torch_bsf.fit(params=tt, values=ff, degree=d) # w -> fの対応関係を訓練したベジエ単体：単体から3次元空間への関数
+            b = torch_bsf.fit(params=tt, values=sf, degree=d) # w -> fの対応関係を訓練したベジエ単体：単体から3次元空間への関数
             end = time.perf_counter()
             tm = end - start
             _, bts = b.meshgrid(num=100)
             bts = bts.detach()
-            #df = pd.DataFrame(bts[:, 3:6],columns=['f1','f2','f3'])
-            #fig = px.scatter_3d(df, x='f1', y='f2', z='f3')
+            df = pd.DataFrame(bts[:, 0:3],columns=['sf1','sf2','sf3'])
+            fig = px.scatter_3d(df, x='sf1', y='sf2', z='sf3')
             #fig.show()
             test_error = 0
             for i in test_indices:
                 #test_error += np.square(s[i].detach().numpy() - b(t)[i].detach().numpy())
-                test_error += np.square(f[i].detach().numpy() - b(t)[i].detach().numpy())
+                test_error += np.square(sfo[i].detach().numpy() - b(t)[i].detach().numpy())
             test_error = np.mean(test_error) # 1つのパレートフロント全体/一部から1つのベジエ単体全体へのテスト誤差
 
             list_ave.append(test_error)
@@ -450,16 +473,49 @@ def bezeir_fit(
 
     adf = pd.DataFrame(Llist_ave)
     tdf = pd.DataFrame(Llist_time)
-    adf.to_csv("ave_err.csv",header=False, index=False, sep="\t")
-    tdf.to_csv("calc_time.csv",header=False, index=False, sep="\t")
+    #adf.to_csv("ave_err.csv",header=False, index=False, sep="\t")
+    #tdf.to_csv("calc_time.csv",header=False, index=False, sep="\t")
+    return Llist_ave,Llist_time
 
 start_time = time.perf_counter()
-x = np.loadtxt("datax.csv")
-y = np.loadtxt("datay.csv")
+x = np.loadtxt("qsar_fish_toxicity_x.csv")
+y = np.loadtxt("qsar_fish_toxicity_y.csv")
 x = x.tolist()
 y = y.tolist()
-testriangle = [3,3]
-bezeir_fit(triangle=testriangle, datax=x, datay=y)
+for i in range(5):
+    if i == 0:
+        testerr, caltime = bezeir_fit(triangle=[1], loop=5, max_degree=15, step=1, datax=x, datay=y)
+        avedf = pd.DataFrame(testerr)
+        timedf = pd.DataFrame(caltime)
+        avedf.to_csv("ave_err.csv",header=False, index=False, sep="\t")
+        timedf.to_csv("calc_time.csv",header=False, index=False, sep="\t")
+    elif i == 1:
+        testerr, caltime = bezeir_fit(triangle=[1,0], loop=5, max_degree=15, step=1, datax=x, datay=y)
+        avedf = pd.DataFrame(testerr)
+        timedf = pd.DataFrame(caltime)
+        avedf.to_csv("ave_err0.csv",header=False, index=False, sep="\t")
+        timedf.to_csv("calc_time0.csv",header=False, index=False, sep="\t")
+    elif i == 2:
+        testerr, caltime = bezeir_fit(triangle=[1,1], loop=5, max_degree=15, step=1, datax=x, datay=y)
+        avedf = pd.DataFrame(testerr)
+        timedf = pd.DataFrame(caltime)
+        avedf.to_csv("ave_err1.csv",header=False, index=False, sep="\t")
+        timedf.to_csv("calc_time1.csv",header=False, index=False, sep="\t")
+    elif i == 3:
+        testerr, caltime = bezeir_fit(triangle=[1,2], loop=5, max_degree=15, step=1, datax=x, datay=y)
+        avedf = pd.DataFrame(testerr)
+        timedf = pd.DataFrame(caltime)
+        avedf.to_csv("ave_err2.csv",header=False, index=False, sep="\t")
+        timedf.to_csv("calc_time2.csv",header=False, index=False, sep="\t")
+    elif i == 4:
+        testerr, caltime = bezeir_fit(triangle=[1,3], loop=5, max_degree=15, step=1, datax=x, datay=y)
+        avedf = pd.DataFrame(testerr)
+        timedf = pd.DataFrame(caltime)
+        avedf.to_csv("ave_err3.csv",header=False, index=False, sep="\t")
+        timedf.to_csv("calc_time3.csv",header=False, index=False, sep="\t")
+
+#testriangle = []
+#bezeir_fit(triangle=testriangle, datax=x, datay=y)
 end_time = time.perf_counter()
 print(end_time - start_time)
 
