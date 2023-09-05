@@ -294,13 +294,6 @@ def calc_EN(x, y, coef):
         elastic_net_list = elastic_net_np.tolist()
         ls.append(elastic_net_list)
 
-    df = pd.DataFrame(ls)
-    
-    fig = px.scatter_3d(df, x=0, y=1, z=2, title="Input solution map (path) of elastic net")
-    fig.show()
-    
-    #TODO suspicous writing (this file is actually used for joining CSVS; should be done without IO, though)
-    df.to_csv("elastic_net.csv",header=False, index=False, sep="\t")
     return ls
 
 def f3(coef):
@@ -408,6 +401,16 @@ def bezier_fit(
     coef = trans_param(w) #入力の三角形に合わせてwをElastic Netのハイパーパラメタに変換
     #print(coef)
     pareto_set = calc_EN(datax, datay, coef)  #パレートセットを計算
+
+    class temp: # Dirty trick: convert the list to pandas dataframe
+        df_pareto_set = pd.DataFrame(pareto_set)
+
+        fig = px.scatter_3d(df_pareto_set, x=0, y=1, z=2, title="The input solution map (path) of elastic net")
+        fig.show()
+
+        #TODO suspicous writing (this file is actually used for joining CSVS; should be done without IO, though)
+        df_pareto_set.to_csv("elastic_net.csv",header=False, index=False, sep="\t")
+    
     f = calc_PF(datax, datay, pareto_set) #パレートフロントを計算
     #make_data_file() #パレートセットのファイルとパレートフロントのファイルを合体
     sfo = []
