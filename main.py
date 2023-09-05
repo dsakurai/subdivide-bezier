@@ -295,6 +295,11 @@ def calc_EN(x, y, coef):
         ls.append(elastic_net_list)
 
     df = pd.DataFrame(ls)
+    
+    fig = px.scatter_3d(df, x=0, y=1, z=2)
+    fig.show()
+    
+    #TODO suspicous writing
     df.to_csv("elastic_net.csv",header=False, index=False, sep="\t")
     return ls
 
@@ -468,7 +473,7 @@ def bezeir_fit(
             bts = bts.detach()
             df = pd.DataFrame(bts[:, 0:3],columns=['sf1','sf2','sf3'])
             fig = px.scatter_3d(df, x='sf1', y='sf2', z='sf3')
-            #fig.show()
+            fig.show()
             test_error = 0
             for i in test_indices:
                 #test_error += np.square(s[i].detach().numpy() - b(t)[i].detach().numpy())
@@ -508,7 +513,9 @@ timedf.to_csv("calc_time.csv",header=False, index=False, sep="\t")
 
 for i in range(5):
     if i == 0:
-        testerr, caltime = bezeir_fit(triangle=[1], loop=5, max_degree=15, step=1, datax=x, datay=y)
+        testerr, caltime = bezeir_fit(triangle=[1], loop=5, max_degree=15, step=1,
+                                      datax=x, datay=y # Load fish. (Comment this line to do this fitting with the default toy data)
+                                      )
         avedf = pd.DataFrame(testerr)
         timedf = pd.DataFrame(caltime)
         avedf.to_csv("ave_err.csv",header=False, index=False, sep="\t")

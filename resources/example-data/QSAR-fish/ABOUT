@@ -1,0 +1,32 @@
+## Information
+This dataset is licensed under a [Creative Commons Attribution 4.0 International (CC BY 4.0) license](https://creativecommons.org/licenses/by/4.0/legalcode).
+It was downloaded from UC Irvine Machine Learning Repository (https://archive.ics.uci.edu/dataset/504/qsar+fish+toxicity).
+DOI: https://doi.org/10.24432/C5JG7B
+
+## Creators:
+- Davide Ballabio
+- Matteo Cassotti
+- Viviana Consonni
+- Roberto Todeschini
+
+## Attrbitute Information
+6 molecular descriptors and 1 quantitative experimental response:
+1) CIC0
+2) SM1_Dz(Z)
+3) GATS1i
+4) NdsCH
+5) NdssC
+6) MLOGP
+7) quantitative response, LC50 [-LOG(mol/L)]
+
+## Citation
+In .bib format:
+```
+@misc{misc_qsar_fish_toxicity_504,
+  author       = {Ballabio,Davide, Cassotti,Matteo, Consonni,Viviana, and Todeschini,Roberto},
+  title        = {{QSAR fish toxicity}},
+  year         = {2019},
+  howpublished = {UCI Machine Learning Repository},
+  note         = {{DOI}: https://doi.org/10.24432/C5JG7B}
+}
+```
