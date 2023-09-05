@@ -493,7 +493,7 @@ def bezier_fit(
 
 class Test_bezier (unittest.TestCase):
     def test_bezier(self):
-
+    
         # QSAR fish data
         # names = ["CIC0", "SM1_Dz(Z)", "GATS1i", "NdsCH", "NdssC", "MLOGP", "quantitative response, LC50 [-LOG(mol/L)]"]
         # df = pd.read_csv("resources/example-data/QSAR-fish/qsar_fish_toxicity.csv",
@@ -514,57 +514,87 @@ class Test_bezier (unittest.TestCase):
 
         degree_0_error = np.median(avedf[0])
         degree_8_error = np.median(avedf[1])
-        self.assertAlmostEqual(
-            log10(
-                degree_8_error / degree_0_error),
-            log10(
-                0.01),# We get roughly 100x improvements in approximating the input surface
-            delta=0.5
-        )
+
+        with self.subTest():
+            self.assertAlmostEqual(
+                log10(
+                    degree_8_error / degree_0_error),
+                log10(
+                    0.01),# We get roughly 100x improvements in approximating the input surface
+                delta=0.5
+            )
 
         degree_0_time = np.median(timedf[0])
         degree_8_time  = np.median(timedf[1])
-        self.assertAlmostEqual(
-            log10(
-                degree_8_time / degree_0_time),
-            log10(
-                10.0), # We get roughly 10x speed up in timing, using the 32 core GPU on macOS Apple Sillicon M1 Max 
-            delta=0.5
-        )
+        with self.subTest():
+            self.assertAlmostEqual(
+                log10(
+                    degree_8_time / degree_0_time),
+                log10(
+                    10.0), # We get roughly 10x speed up in timing, using the 32 core GPU on macOS Apple Sillicon M1 Max, but this is dependent on hardware
+                delta=0.5
+            )
 
+        avedf, timedf = bezier_fit(triangle=[Subdivision.triangle_center], loop=10, degrees=[0,8]
+                                      # datax=x, datay=y  # Load fish. (Comment this line to do this fitting with the default toy data)
+                                      )
 
-        # Tests with subdivision
+        degree_0_error_triangle_center = np.median(avedf[0])
+        degree_8_error_triangle_center = np.median(avedf[1])
 
-        # for i in range(5):
-        #     if i == 0:
-        #         testerr, caltime = bezier_fit(triangle=[1], loop=5, max_degree=15, step=1,
-        #                                       datax=x, datay=y  # Load fish. (Comment this line to do this fitting with the default toy data)
-        #                                       )
-        #         avedf = pd.DataFrame(testerr)
-        #         timedf = pd.DataFrame(caltime)
-        #         avedf.to_csv("ave_err.csv",header=False, index=False, sep="\t")
-        #         timedf.to_csv("calc_time.csv",header=False, index=False, sep="\t")
-        #     elif i == 1:
-        #         testerr, caltime = bezier_fit(triangle=[1, 0], loop=5, max_degree=15, step=1, datax=x, datay=y)
-        #         avedf = pd.DataFrame(testerr)
-        #         timedf = pd.DataFrame(caltime)
-        #         avedf.to_csv("ave_err0.csv",header=False, index=False, sep="\t")
-        #         timedf.to_csv("calc_time0.csv",header=False, index=False, sep="\t")
-        #     elif i == 2:
-        #         testerr, caltime = bezier_fit(triangle=[1, 1], loop=5, max_degree=15, step=1, datax=x, datay=y)
-        #         avedf = pd.DataFrame(testerr)
-        #         timedf = pd.DataFrame(caltime)
-        #         avedf.to_csv("ave_err1.csv",header=False, index=False, sep="\t")
-        #         timedf.to_csv("calc_time1.csv",header=False, index=False, sep="\t")
-        #     elif i == 3:
-        #         testerr, caltime = bezier_fit(triangle=[1, 2], loop=5, max_degree=15, step=1, datax=x, datay=y)
-        #         avedf = pd.DataFrame(testerr)
-        #         timedf = pd.DataFrame(caltime)
-        #         avedf.to_csv("ave_err2.csv",header=False, index=False, sep="\t")
-        #         timedf.to_csv("calc_time2.csv",header=False, index=False, sep="\t")
-        #     elif i == 4:
-        #         testerr, caltime = bezier_fit(triangle=[1, 3], loop=5, max_degree=15, step=1, datax=x, datay=y)
-        #         avedf = pd.DataFrame(testerr)
-        #         timedf = pd.DataFrame(caltime)
-        #         avedf.to_csv("ave_err3.csv",header=False, index=False, sep="\t")
-        #         timedf.to_csv("calc_time3.csv",header=False, index=False, sep="\t")
+        with self.subTest():
+            self.assertAlmostEqual(
+                log10(
+                    degree_8_error_triangle_center/degree_0_error_triangle_center),
+                log10(
+                    0.003),# We get roughly 1/0.03 times improvements in approximating the input surface
+                delta=0.5
+            )
+        
+        degree_0_time_triangle_center = np.median(timedf[0])
+        degree_8_time_triangle_center  = np.median(timedf[1])
+
+        with self.subTest():
+            self.assertAlmostEqual(
+                log10(
+                    degree_8_time_triangle_center/degree_0_time_triangle_center),
+                log10(
+                    12.0), # We get roughly 12x speed up in timing, using the 32 core GPU on macOS Apple Sillicon M1 Max, but this is dependent on hardware
+                delta=0.5
+            )
+
+        with self.subTest():
+            self.assertAlmostEqual(
+                log10(
+                    degree_0_error_triangle_center / degree_0_error),
+                log10(
+                    0.1), # We get roughly this improvement in error, using the 32 core GPU on macOS Apple Sillicon M1 Max, but this is dependent on hardware
+                delta=0.5
+            )
+            
+        with self.subTest():
+            self.assertAlmostEqual(
+                log10(
+                    degree_0_time_triangle_center / degree_0_time),
+                log10(
+                    0.5), # We get roughly this improvement in time, using the 32 core GPU on macOS Apple Sillicon M1 Max, but this is dependent on hardware,
+                delta=0.5
+            )
+
+        with self.subTest():
+            self.assertAlmostEqual(
+                log10(
+                    degree_8_error_triangle_center / degree_8_error),
+                log10(
+                    0.02), # We get roughly this improvement in error, using the 32 core GPU on macOS Apple Sillicon M1 Max, but this is dependent on hardware,
+                delta=0.5
+            )
+            
+        with self.subTest():
+            self.assertAlmostEqual(
+                log10(
+                    degree_8_time_triangle_center  / degree_8_time),
+                log10(
+                    0.5), # We get roughly this improvement in time, using the 32 core GPU on macOS Apple Sillicon M1 Max, but this is dependent on hardware,
+                delta=0.5
+            )
