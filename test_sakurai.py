@@ -1,5 +1,5 @@
 import pytest
-from main import make_w, in_triangle_
+from core import make_w, in_triangle_
 
 def test_in_triangle():
     # largest triangle

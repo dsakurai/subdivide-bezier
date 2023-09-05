@@ -1,14 +1,16 @@
 # This is a sample Python script.
 # Press ⌃R to execute it or replace it with your code.
 # Press Double ⇧ to search everywhere for classes, files, tool windows, actions, and settings.
+from math import log10
 import numpy as np
 import pandas as pd
+import random
 from sklearn.linear_model import ElasticNet
+import time
 import torch
 import torch_bsf
+import unittest
 import plotly.express as px
-import time
-import random
 
 class Subdivision:
     triangle_0      = 0
@@ -378,23 +380,22 @@ def make_data_file():
 def bezier_fit(
         triangle: [int] = [], # default: largest triangle
         loop: [int] = 5, #何回ループするのか
-        max_degree: [int] = 30, #近似に用いる最大の次数
-        step: [int] = 1, #次数いくつごとに近似するか
+        degrees: [int] = list(range(1, 31)), # orders of polynomial in Bezier simplex fitting [1, 2,.., 30]
         datax: [float] = [[1.0, 2.0, 3.0], [6.0, 5.0, 4.0], [7.0, 8.0, 9.0], [12.0, 11.0, 10.0]],
-        datay: [float] = [1.0, 2.0, 3.0, 4.0]):
+        datay: [float] = [1.0, 2.0, 3.0, 4.0]
+    ) -> ([float], [float]):
     """
     ベジエ単体フィッティングを行う。１次から１５次までフィッティングする。
     :param triangle: フィッティングする三角形
     :param datax: 説明変数
     :param datay: 目的変数
-    :return:テスト誤差のファイル、計算時間のファイル
+    :return:テスト誤差のlist、計算時間のlist
     
     The default data are from Mizota et al. (arXiv:2106.12704v1). However, in their computation they normalize the data beforehand.
     As we are supplying the original datax and datay, the fitting result looks different. 
     """
     Llist_ave = [] #テスト誤差が入るリスト
     Llist_time = [] #計算時間が入るリスト
-    emp = [] #リストの改行用
 
     w = make_w(triangle=triangle) #参照三角形を生成する関数
     #print(w)
@@ -405,8 +406,8 @@ def bezier_fit(
     class temp: # Dirty trick: convert the list to pandas dataframe
         df_pareto_set = pd.DataFrame(pareto_set)
 
-        fig = px.scatter_3d(df_pareto_set, x=0, y=1, z=2, title="The input solution map (path) of elastic net")
-        fig.show()
+        # fig = px.scatter_3d(df_pareto_set, x=0, y=1, z=2, title="The input solution map (path) of elastic net")
+        # fig.show()
 
         #TODO suspicous writing (this file is actually used for joining CSVS; should be done without IO, though)
         df_pareto_set.to_csv("elastic_net.csv",header=False, index=False, sep="\t")
@@ -429,12 +430,11 @@ def bezier_fit(
     test_indices = random.sample(data_indices, N_TEST)  # indices to test data
     train_indices = [i for i in data_indices if i not in test_indices]  # indices to training data
 
-
     t = maket(w, triangle=triangle)
     tt = []
-    ss = []
-    ff = []
-    sf = []
+    ss = [] # Pareto set
+    ff = [] # Pareto front
+    sf = [] # Pareto set x front
 
     for i in train_indices:
         tt.append(t[i])
@@ -465,8 +465,7 @@ def bezier_fit(
     for j in range(loop):#実験の回数
         list_ave = []
         list_time = []
-        for k in range(int(max_degree/step)):#どの次数まで計算するか
-            d = step * k + step
+        for d in degrees:#どの次数まで計算するか
             start = time.perf_counter()
             #b = torch_bsf.fit(params=tt, values=ss, degree=d)
             b = torch_bsf.fit(params=tt, values=sf, degree=d) # w -> fの対応関係を訓練したベジエ単体：単体から3次元空間への関数
@@ -474,9 +473,9 @@ def bezier_fit(
             tm = end - start
             _, bts = b.meshgrid(num=100)
             bts = bts.detach()
-            df = pd.DataFrame(bts[:, 0:3],columns=['sf1','sf2','sf3'])
-            fig = px.scatter_3d(df, x='sf1', y='sf2', z='sf3')
-            fig.show()
+            # df = pd.DataFrame(bts[:, 0:3],columns=['sf1','sf2','sf3'])
+            # fig = px.scatter_3d(df, x='sf1', y='sf2', z='sf3')
+            # fig.show()
             test_error = 0
             for i in test_indices:
                 #test_error += np.square(s[i].detach().numpy() - b(t)[i].detach().numpy())
@@ -487,11 +486,85 @@ def bezier_fit(
             list_time.append(tm)
         Llist_ave.append(list_ave)
         Llist_time.append(list_time)
-    Llist_ave.append(emp)
-    Llist_time.append(emp)
 
-    adf = pd.DataFrame(Llist_ave)
-    tdf = pd.DataFrame(Llist_time)
-    #adf.to_csv("ave_err.csv",header=False, index=False, sep="\t")
-    #tdf.to_csv("calc_time.csv",header=False, index=False, sep="\t")
-    return Llist_ave,Llist_time
+    return (pd.DataFrame(Llist_ave),
+            pd.DataFrame(Llist_time))
+
+
+class Test_bezier (unittest.TestCase):
+    def test_bezier(self):
+
+        # QSAR fish data
+        # names = ["CIC0", "SM1_Dz(Z)", "GATS1i", "NdsCH", "NdssC", "MLOGP", "quantitative response, LC50 [-LOG(mol/L)]"]
+        # df = pd.read_csv("resources/example-data/QSAR-fish/qsar_fish_toxicity.csv",
+        #                  sep=";",
+        #                  names=names
+        #                  )
+        # x = df[names[:-1]]
+        # y = df[[names[-1]]]
+        # x = x.values.tolist()
+        # y = y.values.flatten().tolist()
+
+        # Test without subdivision
+        avedf, timedf = bezier_fit(triangle=[], loop=10, degrees=[0, 8],
+                                   # datax=x, datay=y  # Load fish. (Comment out this line to do this fitting with the default toy data)
+                                   )
+        # avedf.to_csv("ave_err.csv",header=False, index=False, sep="\t")
+        # timedf.to_csv("calc_time.csv",header=False, index=False, sep="\t")
+
+        degree_0_error = np.median(avedf[0])
+        degree_8_error = np.median(avedf[1])
+        self.assertAlmostEqual(
+            log10(
+                degree_8_error / degree_0_error),
+            log10(
+                0.01),# We get roughly 100x improvements in approximating the input surface
+            delta=0.5
+        )
+
+        degree_0_time = np.median(timedf[0])
+        degree_8_time  = np.median(timedf[1])
+        self.assertAlmostEqual(
+            log10(
+                degree_8_time / degree_0_time),
+            log10(
+                10.0), # We get roughly 10x speed up in timing, using the 32 core GPU on macOS Apple Sillicon M1 Max 
+            delta=0.5
+        )
+
+
+        # Tests with subdivision
+
+        # for i in range(5):
+        #     if i == 0:
+        #         testerr, caltime = bezier_fit(triangle=[1], loop=5, max_degree=15, step=1,
+        #                                       datax=x, datay=y  # Load fish. (Comment this line to do this fitting with the default toy data)
+        #                                       )
+        #         avedf = pd.DataFrame(testerr)
+        #         timedf = pd.DataFrame(caltime)
+        #         avedf.to_csv("ave_err.csv",header=False, index=False, sep="\t")
+        #         timedf.to_csv("calc_time.csv",header=False, index=False, sep="\t")
+        #     elif i == 1:
+        #         testerr, caltime = bezier_fit(triangle=[1, 0], loop=5, max_degree=15, step=1, datax=x, datay=y)
+        #         avedf = pd.DataFrame(testerr)
+        #         timedf = pd.DataFrame(caltime)
+        #         avedf.to_csv("ave_err0.csv",header=False, index=False, sep="\t")
+        #         timedf.to_csv("calc_time0.csv",header=False, index=False, sep="\t")
+        #     elif i == 2:
+        #         testerr, caltime = bezier_fit(triangle=[1, 1], loop=5, max_degree=15, step=1, datax=x, datay=y)
+        #         avedf = pd.DataFrame(testerr)
+        #         timedf = pd.DataFrame(caltime)
+        #         avedf.to_csv("ave_err1.csv",header=False, index=False, sep="\t")
+        #         timedf.to_csv("calc_time1.csv",header=False, index=False, sep="\t")
+        #     elif i == 3:
+        #         testerr, caltime = bezier_fit(triangle=[1, 2], loop=5, max_degree=15, step=1, datax=x, datay=y)
+        #         avedf = pd.DataFrame(testerr)
+        #         timedf = pd.DataFrame(caltime)
+        #         avedf.to_csv("ave_err2.csv",header=False, index=False, sep="\t")
+        #         timedf.to_csv("calc_time2.csv",header=False, index=False, sep="\t")
+        #     elif i == 4:
+        #         testerr, caltime = bezier_fit(triangle=[1, 3], loop=5, max_degree=15, step=1, datax=x, datay=y)
+        #         avedf = pd.DataFrame(testerr)
+        #         timedf = pd.DataFrame(caltime)
+        #         avedf.to_csv("ave_err3.csv",header=False, index=False, sep="\t")
+        #         timedf.to_csv("calc_time3.csv",header=False, index=False, sep="\t")
