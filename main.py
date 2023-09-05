@@ -382,7 +382,7 @@ def make_data_file():
     df.to_csv("dataf123.csv",header=False, index=False, sep="\t")
     return ls
 
-def bezeir_fit(
+def bezier_fit(
         triangle: [int] = [], # default: largest triangle
         loop: [int] = 5, #何回ループするのか
         max_degree: [int] = 30, #近似に用いる最大の次数
@@ -503,8 +503,8 @@ x = df[names[:-1]]
 y = df[[names[-1]]]
 x = x.values.tolist()
 y = y.values.flatten().tolist()
-testerr, caltime = bezeir_fit(triangle=[], loop=5, max_degree=15, step=1,
-                              datax=x, datay=y # Load fish. (Comment this line to do this fitting with the default toy data)
+testerr, caltime = bezier_fit(triangle=[], loop=5, max_degree=15, step=1,
+                              datax=x, datay=y  # Load fish. (Comment this line to do this fitting with the default toy data)
                               )
 avedf = pd.DataFrame(testerr)
 timedf = pd.DataFrame(caltime)
@@ -513,33 +513,33 @@ timedf.to_csv("calc_time.csv",header=False, index=False, sep="\t")
 
 for i in range(5):
     if i == 0:
-        testerr, caltime = bezeir_fit(triangle=[1], loop=5, max_degree=15, step=1,
-                                      datax=x, datay=y # Load fish. (Comment this line to do this fitting with the default toy data)
+        testerr, caltime = bezier_fit(triangle=[1], loop=5, max_degree=15, step=1,
+                                      datax=x, datay=y  # Load fish. (Comment this line to do this fitting with the default toy data)
                                       )
         avedf = pd.DataFrame(testerr)
         timedf = pd.DataFrame(caltime)
         avedf.to_csv("ave_err.csv",header=False, index=False, sep="\t")
         timedf.to_csv("calc_time.csv",header=False, index=False, sep="\t")
     elif i == 1:
-        testerr, caltime = bezeir_fit(triangle=[1,0], loop=5, max_degree=15, step=1, datax=x, datay=y)
+        testerr, caltime = bezier_fit(triangle=[1, 0], loop=5, max_degree=15, step=1, datax=x, datay=y)
         avedf = pd.DataFrame(testerr)
         timedf = pd.DataFrame(caltime)
         avedf.to_csv("ave_err0.csv",header=False, index=False, sep="\t")
         timedf.to_csv("calc_time0.csv",header=False, index=False, sep="\t")
     elif i == 2:
-        testerr, caltime = bezeir_fit(triangle=[1,1], loop=5, max_degree=15, step=1, datax=x, datay=y)
+        testerr, caltime = bezier_fit(triangle=[1, 1], loop=5, max_degree=15, step=1, datax=x, datay=y)
         avedf = pd.DataFrame(testerr)
         timedf = pd.DataFrame(caltime)
         avedf.to_csv("ave_err1.csv",header=False, index=False, sep="\t")
         timedf.to_csv("calc_time1.csv",header=False, index=False, sep="\t")
     elif i == 3:
-        testerr, caltime = bezeir_fit(triangle=[1,2], loop=5, max_degree=15, step=1, datax=x, datay=y)
+        testerr, caltime = bezier_fit(triangle=[1, 2], loop=5, max_degree=15, step=1, datax=x, datay=y)
         avedf = pd.DataFrame(testerr)
         timedf = pd.DataFrame(caltime)
         avedf.to_csv("ave_err2.csv",header=False, index=False, sep="\t")
         timedf.to_csv("calc_time2.csv",header=False, index=False, sep="\t")
     elif i == 4:
-        testerr, caltime = bezeir_fit(triangle=[1,3], loop=5, max_degree=15, step=1, datax=x, datay=y)
+        testerr, caltime = bezier_fit(triangle=[1, 3], loop=5, max_degree=15, step=1, datax=x, datay=y)
         avedf = pd.DataFrame(testerr)
         timedf = pd.DataFrame(caltime)
         avedf.to_csv("ave_err3.csv",header=False, index=False, sep="\t")
