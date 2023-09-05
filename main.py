@@ -299,7 +299,7 @@ def calc_EN(x, y, coef):
     fig = px.scatter_3d(df, x=0, y=1, z=2, title="Input solution map (path) of elastic net")
     fig.show()
     
-    #TODO suspicous writing
+    #TODO suspicous writing (this file is actually used for joining CSVS; should be done without IO, though)
     df.to_csv("elastic_net.csv",header=False, index=False, sep="\t")
     return ls
 
