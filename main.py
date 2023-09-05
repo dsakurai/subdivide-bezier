@@ -296,7 +296,7 @@ def calc_EN(x, y, coef):
 
     df = pd.DataFrame(ls)
     
-    fig = px.scatter_3d(df, x=0, y=1, z=2)
+    fig = px.scatter_3d(df, x=0, y=1, z=2, title="Input solution map (path) of elastic net")
     fig.show()
     
     #TODO suspicous writing
