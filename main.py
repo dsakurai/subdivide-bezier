@@ -384,6 +384,9 @@ def bezeir_fit(
     :param datax: 説明変数
     :param datay: 目的変数
     :return:テスト誤差のファイル、計算時間のファイル
+    
+    The default data are from Mizota et al. (arXiv:2106.12704v1). However, in their computation they normalize the data beforehand.
+    As we are supplying the original datax and datay, the fitting result looks different. 
     """
     Llist_ave = [] #テスト誤差が入るリスト
     Llist_time = [] #計算時間が入るリスト
