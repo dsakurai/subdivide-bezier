@@ -16,6 +16,7 @@ class Subdivision:
     triangle_2      = 2
     triangle_center = 3
 
+#TODO suspicious epsilon
 eps = 0.0000000001
 
 # Number of flips in the triangle
@@ -244,7 +245,7 @@ def maket(
     return tlist
 
 def calc_alpha(w0, eps):
-    w0 = max(w0,0.01)
+    w0 = max(w0,0.01) # TODO This 0.01 avoids explosion of alpha, but is 0.01 a good choice?
     return (1 - w0 + eps) / w0 
 
 def calc_L1_ratio(w0, w1, eps):
@@ -281,11 +282,12 @@ def calc_EN(x, y, coef):
     """
     data_x = pd.DataFrame(x)
     data_y = pd.DataFrame(y)
-    ls = []
+    ls = [] # TODO change to Pandas dataframe?
     for i in coef:
+        # TODO suspicious epsilon
         if i[1] < 1 - 1e-4: # L1_ratio が大体 1e-4 より低い時にElastic Netが収束しない問題がある。　#todo小さい時は置き換える
             i[1] += 1e-4 # continue # 要実験
-        elastic_net = ElasticNet(alpha = i[0] + 0.04, #0.04より小さいと収束しない　# todo収束しないときは線型回帰で置き換える
+        elastic_net = ElasticNet(alpha = i[0] + 0.04, #0.04より小さいと収束しない　# TODO +0.04 をやめて線型回帰で置き換える
                                  l1_ratio = i[1])  #li_ratio alpha 足さないとエラーが出る。 /Users/zaizenkiichi/PycharmProjects/pythonProject2/venv/lib/python3.8/site-packages/sklearn/linear_model/_coordinate_descent.py:648: ConvergenceWarning: Objective did not converge. You might want to increase the number of iterations, check the scale of the features or consider increasing regularisation. Duality gap: 1.473e+00, tolerance: 5.000e-04 Linear regression models with null weight for the l1 regularization term are more efficiently fitted using one of the solvers implemented in sklearn.linear_model.Ridge/RidgeCV instead.model = cd_fast.enet_coordinate_descent(
         elastic_net = elastic_net.fit(data_x, data_y)
         elastic_net_np = elastic_net.coef_.round(3)
@@ -300,8 +302,10 @@ def f3(coef):
     X = np.array(coef)
     return np.linalg.norm(X, ord = 2)**2
 
+# TODO suspicious epsilon
 eps = 1e-4 # 16 で良いのか？ 16はかなり小さい（数値誤差に埋もれやすい） 1e-4, 1e-3, 1e-2 などで実験
 
+# TODO what's this function?
 def f1c(data_x, data_y, coef):
     #calc 1/2M||X0 - y||^2
     #np.matmul(data_x, coef.T) = X0
@@ -313,11 +317,13 @@ def f1c(data_x, data_y, coef):
     g = (np.linalg.norm((np.matmul(data_x, coef.T) - data_y).T, ord = 2)**2)/(2*M)
     return g + eps * f3(coef)
 
+# TODO what's this function?
 def f2c(coef):
     #calc |0|
     X = np.array(coef)
     return np.linalg.norm(X, ord = 1) + eps * f3(coef)
 
+# TODO what's this function?
 def f3c(coef):
     #calc 1/2||0||^2
     X = np.array(coef)
@@ -443,8 +449,10 @@ def bezeir_fit(
     #xdf = pd.DataFrame(s[:, 3:6], columns=['01','02','03'])
     #xdf = pd.DataFrame(f, columns=['f1','f2','f3'])
     xdf = pd.DataFrame(sfo[:, 0:3], columns=['sf1','sf2','sf3'])
-    fig = px.scatter_3d(xdf, x='sf1', y='sf2', z='sf3')
-    #fig.show()
+    # fig = px.scatter_3d(xdf, x='sf1', y='sf2', z='sf3')
+    # fig.show()
+    
+    # Use torch_bsf to learn the solution paths (i.e. solution map)
 
     for j in range(loop):#実験の回数
         list_ave = []
@@ -481,10 +489,23 @@ def bezeir_fit(
     return Llist_ave,Llist_time
 
 start_time = time.perf_counter()
-x = np.loadtxt("qsar_fish_toxicity_x.csv")
-y = np.loadtxt("qsar_fish_toxicity_y.csv")
-x = x.tolist()
-y = y.tolist()
+names = ["CIC0", "SM1_Dz(Z)", "GATS1i", "NdsCH", "NdssC", "MLOGP", "quantitative response, LC50 [-LOG(mol/L)]"]
+df = pd.read_csv("resources/example-data/QSAR-fish/qsar_fish_toxicity.csv",
+                 sep=";",
+                 names=names
+                 )
+x = df[names[:-1]]
+y = df[[names[-1]]]
+x = x.values.tolist()
+y = y.values.flatten().tolist()
+testerr, caltime = bezeir_fit(triangle=[], loop=5, max_degree=15, step=1,
+                              datax=x, datay=y # Load fish. (Comment this line to do this fitting with the default toy data)
+                              )
+avedf = pd.DataFrame(testerr)
+timedf = pd.DataFrame(caltime)
+avedf.to_csv("ave_err.csv",header=False, index=False, sep="\t")
+timedf.to_csv("calc_time.csv",header=False, index=False, sep="\t")
+
 for i in range(5):
     if i == 0:
         testerr, caltime = bezeir_fit(triangle=[1], loop=5, max_degree=15, step=1, datax=x, datay=y)
