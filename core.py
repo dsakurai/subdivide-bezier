@@ -431,15 +431,18 @@ def experiment_bezier(
         list_ave = []
         list_time = []
         for d in degrees:
-            start = time.perf_counter()
+        
+            time_start = time.perf_counter()
+            #
             bezier_simplex = torch_bsf.fit(
                 params=w_local_train,
                 values=pareto_set_x_front_train,
                 degree=d) # w -> fの対応関係を訓練したベジエ単体：単体から3次元空間への関数
-            end = time.perf_counter()
-            tm = end - start
-            _, bts = bezier_simplex.meshgrid(num=100)
-            bts = bts.detach() # TODO can we remove this line?
+            #
+            time_end = time.perf_counter()
+            
+            # _, bts = bezier_simplex.meshgrid(num=100)
+            # bts = bts.detach() # TODO can we remove this line?
             # df = pd.DataFrame(bts[:, 0:3],columns=['sf1','sf2','sf3'])
             # fig = px.scatter_3d(df, x='sf1', y='sf2', z='sf3')
             # fig.show()
@@ -453,7 +456,7 @@ def experiment_bezier(
             test_error = np.mean(errors) # 1つのパレートフロント全体/一部から1つのベジエ単体全体へのテスト誤差
 
             list_ave.append(test_error)
-            list_time.append(tm)
+            list_time.append(time_end - time_start)
         Llist_ave.append(list_ave)
         Llist_time.append(list_time)
 
