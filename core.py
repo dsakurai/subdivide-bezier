@@ -445,12 +445,6 @@ def experiment_bezier(
     N_DATA = len(w)
     N_TEST = N_DATA // 10
     
-    # Ground truth coordinate positions (i.e. list of Pareto set x Pareto front in elastic net)
-    ground_truth = []
-    for i in range(len(pareto_set)):
-        ground_truth.append([
-            pareto_set[i] + f[i]
-        ])
         
     data_indices = list(range(N_DATA))  # [0, ..., 5150]
     test_indices = np.random.randint(low=0, high=N_DATA-1, size=N_TEST).tolist()  # indices to test data
@@ -463,6 +457,11 @@ def experiment_bezier(
         # Join (x_0, x_1, ...) and (f_0, f_2, f_3)
         pareto_set[i] + f[i] for i in train_indices
     ])
+    
+    # Ground truth coordinate positions (i.e. list of Pareto set x Pareto front in elastic net)
+    ground_truth = [
+        pareto_set[i] + f[i] for i in range(len(pareto_set))
+    ]
     
     w_local_train = torch.tensor([w_local[id] for id in train_indices])
     w_local_tensor       = torch.tensor( w_local    ) # TODO no point storing this in a tensor instance
