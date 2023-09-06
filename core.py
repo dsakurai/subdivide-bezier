@@ -464,7 +464,7 @@ def experiment_bezier(
         pareto_set[i] + f[i] for i in train_indices
     ])
     
-    w_local_train_tensor = torch.tensor([w_local[id] for id in train_indices])
+    w_local_train = torch.tensor([w_local[id] for id in train_indices])
     w_local_tensor       = torch.tensor( w_local    ) # TODO no point storing this in a tensor instance
     ground_truth_tensor  = torch.tensor(ground_truth)
     
@@ -481,7 +481,7 @@ def experiment_bezier(
             start = time.perf_counter()
             #b = torch_bsf.fit(params=tt, values=ss, degree=d)
             bezier_simplex = torch_bsf.fit(
-                params=w_local_train_tensor,
+                params=w_local_train,
                 values=pareto_set_x_front,
                 degree=d) # w -> fの対応関係を訓練したベジエ単体：単体から3次元空間への関数
             end = time.perf_counter()
