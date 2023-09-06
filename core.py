@@ -457,15 +457,15 @@ def experiment_bezier(
         # Join (x_0, x_1, ...) and (f_0, f_2, f_3)
         pareto_set[i] + f[i] for i in train_indices
     ])
-    
+    #
     # Ground truth coordinate positions (i.e. list of Pareto set x Pareto front in elastic net)
-    ground_truth = [
+    ground_truth = torch.tensor([
+        # Join (x_0, x_1, ...) and (f_0, f_2, f_3)
         pareto_set[i] + f[i] for i in range(len(pareto_set))
-    ]
+    ])
     
     w_local_train = torch.tensor([w_local[id] for id in train_indices])
     w_local_tensor       = torch.tensor( w_local    ) # TODO no point storing this in a tensor instance
-    ground_truth_tensor  = torch.tensor(ground_truth)
     
     # xdf = pd.DataFrame(torch.tensor(ground_truth)[:, 0:3], columns=['sf1','sf2','sf3'])
     # fig = px.scatter_3d(xdf, x='sf1', y='sf2', z='sf3')
@@ -493,7 +493,7 @@ def experiment_bezier(
             errors = []
             for i in test_indices:
                 errors.append(np.square(
-                    ground_truth_tensor[i].detach().numpy()
+                    ground_truth[i].detach().numpy()
                     # [w1, w2, w3] for index i
                     - bezier_simplex(w_local_tensor.detach().numpy()[i].reshape(1,3)).detach().numpy())
                 )
