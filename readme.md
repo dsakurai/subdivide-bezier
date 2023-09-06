@@ -14,8 +14,3 @@ Files
     - You can run tests in this Python file
         - The errors between the Pareto front/set and their approximation are expected to be the same as the values hard-coded in the test
         - In contrast, the time for training may vary depending on the hardware
-
-- make_w_and_t.py:
-  - 参照三角形を生成して、分割した場合はパラメータの取り直しも行う
-  - 出力: 参照三角形のファイルとパラメータの取り直しが行われた三角形のファイル
-    wとtがたくさん入っていて三角形の形になっている。
