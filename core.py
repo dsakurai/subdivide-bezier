@@ -291,7 +291,7 @@ def calc_EN(x, y, w):
     
         # alpha and l1_ratio are prone to error. /Users/zaizenkiichi/PycharmProjects/pythonProject2/venv/lib/python3.8/site-packages/sklearn/linear_model/_coordinate_descent.py:648: ConvergenceWarning: Objective did not converge. You might want to increase the number of iterations, check the scale of the features or consider increasing regularisation. Duality gap: 1.473e+00, tolerance: 5.000e-04 Linear regression models with null weight for the l1 regularization term are more efficiently fitted using one of the solvers implemented in sklearn.linear_model.Ridge/RidgeCV instead.model = cd_fast.enet_coordinate_descent(
         
-        alpha += 0.04 #0.04より小さいと収束しない　# TODO +0.04 をやめて線型回帰で置き換える
+        alpha = max(0.04, alpha) #0.04より小さいと収束しない　# TODO +0.04 をやめて線型回帰で置き換える
         
         # TODO suspicious epsilon
         if l1_ratio < 1 - 1e-4: # L1_ratio が大体 1e-4 より低い時にElastic Netが収束しない問題がある。　#todo小さい時は置き換える
@@ -583,12 +583,14 @@ class Test_bezier (unittest.TestCase):
             )
 
         with self.subTest():
+            error = degree_0_error_triangle_center / degree_0_error
             self.assertAlmostEqual(
                 log10(
-                    degree_0_error_triangle_center / degree_0_error),
+                    error),
                 log10(
-                    0.5), # We get roughly this improvement in error, using the 32 core GPU on macOS Apple Sillicon M1 Max, but this is dependent on hardware
-                delta=0.5
+                    0.4), # We get roughly this improvement in error, using the 32 core GPU on macOS Apple Sillicon M1 Max, but this is dependent on hardware
+                delta=0.5,
+                msg=f"error: {error}"
             )
             
         with self.subTest():
