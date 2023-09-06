@@ -463,13 +463,9 @@ def experiment_bezier(
 
     for i in train_indices:
         
-        # Pareto set
-        pset   = [pareto_set[i][j] for j in range(dim_x)]
-        # Pareto front
-        pfront = [f[i][k] for k in range(3)]
-        
+        # Pareto set x front
         sf.append(
-             pset + pfront
+            pareto_set[i] + f[i]
         )
 
     sf = torch.tensor(sf)
