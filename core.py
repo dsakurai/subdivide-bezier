@@ -344,18 +344,12 @@ def calc_PF(x, y, pareto_set):
     """
     ls = []
     for thetas in pareto_set:
-        list2 = []
-        a = f1_perturbed(x, y, thetas)
-        b = f2_perturbed(thetas)
-        c = f3_perturbed(thetas)
 
-        d = a.tolist()
-        e = b.tolist()
-        f = c.tolist()
-        list2.append(d)
-        list2.append(e)
-        list2.append(f)
-        ls.append(list2)
+        ls.append([
+            f1_perturbed(x, y, thetas).tolist(),
+            f2_perturbed(thetas).tolist(),
+            f3_perturbed(thetas).tolist()
+        ])
 
     # df = pd.DataFrame(ls)
     return ls
