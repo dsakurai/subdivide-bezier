@@ -17,8 +17,7 @@ class Subdivision:
     triangle_2      = 2
     triangle_center = 3
 
-#TODO suspicious epsilon
-eps = 0.0000000001
+eps = 1e-4
 
 # Number of flips in the triangle
 def flipped(upper_triangle):
@@ -310,9 +309,6 @@ def calc_EN(x, y, w):
 def f3(coef):
     X = np.array(coef)
     return np.linalg.norm(X, ord = 2)**2
-
-# TODO suspicious epsilon
-eps = 1e-4
 
 # TODO what's this function?
 def f1c(data_x, data_y, coef):
