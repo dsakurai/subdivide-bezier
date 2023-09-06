@@ -4,7 +4,7 @@
 from math import log10
 import numpy as np
 import pandas as pd
-from sklearn.linear_model import LinearRegression, ElasticNet
+from sklearn.linear_model import LinearRegression, Ridge, ElasticNet
 import time
 import torch
 import torch_bsf
@@ -288,12 +288,7 @@ def calc_EN(x, y, w):
     a_l = w_2_alpha_l1(w) # transform (w1, w2, w3) to the standard hyperparamenters, i.e. alpha and l1-ratio
     
     for alpha, l1_ratio in a_l:
-    
         
-        # TODO suspicious epsilon
-        if l1_ratio < 1 - 1e-4: # L1_ratio が大体 1e-4 より低い時にElastic Netが収束しない問題がある。　#todo小さい時は置き換える
-            l1_ratio += 1e-4 # continue # 要実験
-            
         def fit(model):
             elastic_net      = model.fit(data_x, data_y)
             elastic_net_np   = elastic_net.coef_.round(3) # TODO why round the array?
@@ -304,6 +299,10 @@ def calc_EN(x, y, w):
         if alpha < 0.04: # Scikit-learn tends to fail to converge ElasticNet under this setting.
             coefficients = fit(LinearRegression())
             coefficients = coefficients[0] # ElasticNet weirdness in Scikit-learn...
+            
+        elif l1_ratio < 1e-4: # L1_ratio が大体 1e-4 より低い時にElastic Netが収束しない問題がある。　#todo小さい時は置き換える
+            coefficients = fit(Ridge(alpha=alpha))
+            coefficients = coefficients[0] # Ridge regression weirdness in Scikit-learn...
 
         else: # Do ElasticNet
             coefficients = fit(ElasticNet(alpha=alpha, l1_ratio=l1_ratio))
