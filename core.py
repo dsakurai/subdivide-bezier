@@ -444,21 +444,16 @@ def experiment_bezier(
 
     N_DATA = len(w)
     N_TEST = N_DATA // 10
-    N_TRAIN = N_DATA - N_TEST
     data_indices = list(range(N_DATA))  # [0, ..., 5150]
     test_indices = random.sample(data_indices, N_TEST)  # indices to test data
     train_indices = [i for i in data_indices if i not in test_indices]  # indices to training data
 
     t = maket(w, triangle=triangle)
     tt = []
-    ss = [] # Pareto set
-    ff = [] # Pareto front
     sf = [] # Pareto set x front
 
     for i in train_indices:
         tt.append(t[i])
-        ss.append(pareto_set[i])
-        ff.append(f[i])
         sfi = []
         for j in range(len(pareto_set[0])):
             sfi.append(pareto_set[i][j])
@@ -466,12 +461,8 @@ def experiment_bezier(
             sfi.append(f[i][k])
         sf.append(sfi)
     tt = torch.tensor(tt)
-    ss = torch.tensor(ss)
-    ff = torch.tensor(ff)
     sf = torch.tensor(sf)
     t = torch.tensor(t)
-    s = torch.tensor(pareto_set)
-    f = torch.tensor(f)
     ground_truth = torch.tensor(ground_truth)
     #xdf = pd.DataFrame(s[:, 3:6], columns=['01','02','03'])
     #xdf = pd.DataFrame(f, columns=['f1','f2','f3'])
