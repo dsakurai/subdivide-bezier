@@ -367,7 +367,10 @@ def experiment_bezier(
         triangle: [int] = [],
         num_experiments: [int] = 5,
         degrees: [int] = list(range(1, 31)),
-        datax: [float] = [[1.0, 2.0, 3.0], [6.0, 5.0, 4.0], [7.0, 8.0, 9.0], [12.0, 11.0, 10.0]],
+        datax: [float] = [[ 1.0,  2.0,  3.0],
+                          [ 6.0,  5.0,  4.0],
+                          [ 7.0,  8.0,  9.0],
+                          [12.0, 11.0, 10.0]],
         datay: [float] = [1.0, 2.0, 3.0, 4.0]
     ) -> ([float], [float]):
     """
