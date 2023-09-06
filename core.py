@@ -479,7 +479,6 @@ def experiment_bezier(
         list_time = []
         for d in degrees:#どの次数まで計算するか
             start = time.perf_counter()
-            #b = torch_bsf.fit(params=tt, values=ss, degree=d)
             bezier_simplex = torch_bsf.fit(
                 params=w_local_train,
                 values=pareto_set_x_front_train,
