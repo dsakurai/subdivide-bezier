@@ -453,13 +453,13 @@ def experiment_bezier(
     w_local = localize_w(w, triangle=triangle)
 
     # Pareto set x Pareto front
-    pareto_set_x_front = torch.tensor([
+    pareto_set_x_front_train = torch.tensor([
         # Join (x_0, x_1, ...) and (f_0, f_2, f_3)
         pareto_set[i] + f[i] for i in train_indices
     ])
     #
     # Ground truth coordinate positions (i.e. list of Pareto set x Pareto front in elastic net)
-    ground_truth = torch.tensor([
+    pareto_set_x_front_ground_truth = torch.tensor([
         # Join (x_0, x_1, ...) and (f_0, f_2, f_3)
         pareto_set[i] + f[i] for i in range(len(pareto_set))
     ])
@@ -467,7 +467,7 @@ def experiment_bezier(
     w_local_train = torch.tensor([w_local[id] for id in train_indices])
     w_local_tensor       = torch.tensor( w_local    ) # TODO no point storing this in a tensor instance
     
-    # xdf = pd.DataFrame(torch.tensor(ground_truth)[:, 0:3], columns=['sf1','sf2','sf3'])
+    # xdf = pd.DataFrame(torch.tensor(pareto_set_x_front_ground_truth)[:, 0:3], columns=['sf1','sf2','sf3'])
     # fig = px.scatter_3d(xdf, x='sf1', y='sf2', z='sf3')
     # fig.show()
 
@@ -481,7 +481,7 @@ def experiment_bezier(
             #b = torch_bsf.fit(params=tt, values=ss, degree=d)
             bezier_simplex = torch_bsf.fit(
                 params=w_local_train,
-                values=pareto_set_x_front,
+                values=pareto_set_x_front_train,
                 degree=d) # w -> fの対応関係を訓練したベジエ単体：単体から3次元空間への関数
             end = time.perf_counter()
             tm = end - start
@@ -493,7 +493,7 @@ def experiment_bezier(
             errors = []
             for i in test_indices:
                 errors.append(np.square(
-                    ground_truth[i].detach().numpy()
+                    pareto_set_x_front_ground_truth[i].detach().numpy()
                     # [w1, w2, w3] for index i
                     - bezier_simplex(w_local_tensor.detach().numpy()[i].reshape(1,3)).detach().numpy())
                 )
