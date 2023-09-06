@@ -427,6 +427,7 @@ def experiment_bezier(
     #print(w)
     #print(coef)
     pareto_set = calc_EN(datax, datay, w)  #パレートセットを計算
+    assert(len(w) == len(pareto_set))
 
     class temp: # Dirty trick: convert the list to pandas dataframe
         df_pareto_set = pd.DataFrame(pareto_set)
