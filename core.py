@@ -291,7 +291,7 @@ def calc_EN(x, y, w):
         
         def fit(model):
             elastic_net      = model.fit(data_x, data_y)
-            elastic_net_np   = elastic_net.coef_.round(3) # TODO why round the array?
+            elastic_net_np   = elastic_net.coef_
             return elastic_net_np.tolist()
 
         # alpha and l1_ratio are prone to error. /Users/zaizenkiichi/PycharmProjects/pythonProject2/venv/lib/python3.8/site-packages/sklearn/linear_model/_coordinate_descent.py:648: ConvergenceWarning: Objective did not converge. You might want to increase the number of iterations, check the scale of the features or consider increasing regularisation. Duality gap: 1.473e+00, tolerance: 5.000e-04 Linear regression models with null weight for the l1 regularization term are more efficiently fitted using one of the solvers implemented in sklearn.linear_model.Ridge/RidgeCV instead.model = cd_fast.enet_coordinate_descent(
