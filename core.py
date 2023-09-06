@@ -377,19 +377,22 @@ def make_data_file():
     df.to_csv("dataf123.csv",header=False, index=False, sep="\t")
     return ls
 
-def bezier_fit(
-        triangle: [int] = [], # default: largest triangle
-        loop: [int] = 5, #何回ループするのか
-        degrees: [int] = list(range(1, 31)), # orders of polynomial in Bezier simplex fitting [1, 2,.., 30]
+def experiment_bezier(
+        triangle: [int] = [],
+        num_experiments: [int] = 5,
+        degrees: [int] = list(range(1, 31)),
         datax: [float] = [[1.0, 2.0, 3.0], [6.0, 5.0, 4.0], [7.0, 8.0, 9.0], [12.0, 11.0, 10.0]],
         datay: [float] = [1.0, 2.0, 3.0, 4.0]
     ) -> ([float], [float]):
     """
-    ベジエ単体フィッティングを行う。１次から１５次までフィッティングする。
-    :param triangle: フィッティングする三角形
-    :param datax: 説明変数
-    :param datay: 目的変数
-    :return:テスト誤差のlist、計算時間のlist
+    Run experiments of Bezier fitting.
+    We 
+    :param triangle: The choice of the subdivided triangle. The default is actually the largest triangle, i.e. the whole triangle
+    :param num_experiments:  Run the fitting and evaluation this many times
+    :param degrees: orders of polynomial in Bezier simplex fitting. The default is [1, 2,.., 30].
+    :param datax: variables to be fed for Elastic Net regression
+    :param datay: observed values for the variables datax
+    :return: two lists: one for errors and another for duration
     
     The default data are from Mizota et al. (arXiv:2106.12704v1). However, in their computation they normalize the data beforehand.
     As we are supplying the original datax and datay, the fitting result looks different. 
@@ -462,7 +465,7 @@ def bezier_fit(
 
     # Use torch_bsf to learn the solution paths (i.e. solution map)
 
-    for j in range(loop):#実験の回数
+    for j in range(num_experiments):#実験の回数
         list_ave = []
         list_time = []
         for d in degrees:#どの次数まで計算するか
@@ -506,9 +509,9 @@ class Test_bezier (unittest.TestCase):
         # y = y.values.flatten().tolist()
 
         # Test without subdivision
-        avedf, timedf = bezier_fit(triangle=[], loop=10, degrees=[0, 8],
-                                   # datax=x, datay=y  # Load fish. (Comment out this line to do this fitting with the default toy data)
-                                   )
+        avedf, timedf = experiment_bezier(triangle=[], num_experiments=10, degrees=[0, 8],
+                                          # datax=x, datay=y  # Load fish. (Comment out this line to do this fitting with the default toy data)
+                                          )
         # avedf.to_csv("ave_err.csv",header=False, index=False, sep="\t")
         # timedf.to_csv("calc_time.csv",header=False, index=False, sep="\t")
 
@@ -535,9 +538,9 @@ class Test_bezier (unittest.TestCase):
                 delta=0.5
             )
 
-        avedf, timedf = bezier_fit(triangle=[Subdivision.triangle_center], loop=10, degrees=[0,8]
-                                      # datax=x, datay=y  # Load fish. (Comment this line to do this fitting with the default toy data)
-                                      )
+        avedf, timedf = experiment_bezier(triangle=[Subdivision.triangle_center], num_experiments=10, degrees=[0, 8]
+                                          # datax=x, datay=y  # Load fish. (Comment this line to do this fitting with the default toy data)
+                                          )
 
         degree_0_error_triangle_center = np.median(avedf[0])
         degree_8_error_triangle_center = np.median(avedf[1])
