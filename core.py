@@ -342,17 +342,12 @@ def calc_PF(x, y, pareto_set):
     :param pareto_set: パレート集合
     :return: パレートフロント
     """
-    ls = []
-    for thetas in pareto_set:
-
-        ls.append([
-            f1_perturbed(x, y, thetas).tolist(),
-            f2_perturbed(thetas).tolist(),
-            f3_perturbed(thetas).tolist()
-        ])
-
-    # df = pd.DataFrame(ls)
-    return ls
+    return [
+        [ f1_perturbed(x, y, thetas).tolist(),
+          f2_perturbed(thetas).tolist(),
+          f3_perturbed(thetas).tolist()]
+        for thetas in pareto_set
+    ]
 
 def fit_bezier_simplex(
         df_pareto: pd.DataFrame,
