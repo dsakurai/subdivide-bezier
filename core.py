@@ -380,10 +380,12 @@ def make_data_file():
 def fit_bezier_simplex(
         df_pareto: pd.DataFrame,
         triangle: [int],
+        params ,
+        values ,
         degree: [int],
     ):
     """
-    :param df_pareto: Pareto set, front, or both.
+    :param df_pareto: Pareto set, Pareto front, or both.
     :param triangle: The triangle in the subdivision.
     :param degree: Degree of the bezier simplex fitting
     :return: 
@@ -429,14 +431,16 @@ def experiment_bezier(
 
     f = calc_PF(datax, datay, pareto_set) #パレートフロントを計算
     #make_data_file() #パレートセットのファイルとパレートフロントのファイルを合体
-    sfo = []
+    
+    # Ground truth coordinate positions (i.e. list of Pareto set x Pareto front in elastic net)
+    ground_truth = []
     for i in range(len(pareto_set)):
         list2 = []
         for j in range(len(pareto_set[0])):
             list2.append(pareto_set[i][j])
         for k in range(3):
             list2.append(f[i][k])
-        sfo.append(list2)
+        ground_truth.append(list2)
 
     N_DATA = len(w)
     N_TEST = N_DATA // 10
@@ -468,10 +472,10 @@ def experiment_bezier(
     t = torch.tensor(t)
     s = torch.tensor(pareto_set)
     f = torch.tensor(f)
-    sfo = torch.tensor(sfo)
+    ground_truth = torch.tensor(ground_truth)
     #xdf = pd.DataFrame(s[:, 3:6], columns=['01','02','03'])
     #xdf = pd.DataFrame(f, columns=['f1','f2','f3'])
-    xdf = pd.DataFrame(sfo[:, 0:3], columns=['sf1','sf2','sf3'])
+    xdf = pd.DataFrame(ground_truth[:, 0:3], columns=['sf1','sf2','sf3'])
     # fig = px.scatter_3d(xdf, x='sf1', y='sf2', z='sf3')
     # fig.show()
 
@@ -493,8 +497,7 @@ def experiment_bezier(
             # fig.show()
             test_error = 0
             for i in test_indices:
-                #test_error += np.square(s[i].detach().numpy() - b(t)[i].detach().numpy())
-                test_error += np.square(sfo[i].detach().numpy() - b(t)[i].detach().numpy())
+                test_error += np.square(ground_truth[i].detach().numpy() - b(t)[i].detach().numpy())
             test_error = np.mean(test_error) # 1つのパレートフロント全体/一部から1つのベジエ単体全体へのテスト誤差
 
             list_ave.append(test_error)
