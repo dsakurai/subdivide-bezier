@@ -494,13 +494,14 @@ def experiment_bezier(
             # df = pd.DataFrame(bts[:, 0:3],columns=['sf1','sf2','sf3'])
             # fig = px.scatter_3d(df, x='sf1', y='sf2', z='sf3')
             # fig.show()
-            test_error = 0
+            errors = []
             for i in test_indices:
-                test_error += np.square(
+                errors.append(np.square(
                     ground_truth_tensor[i].detach().numpy()
                     # [w1, w2, w3] for index i
                     - bezier_simplex(w_local_tensor.detach().numpy()[i].reshape(1,3)).detach().numpy())
-            test_error = np.mean(test_error) # 1つのパレートフロント全体/一部から1つのベジエ単体全体へのテスト誤差
+                )
+            test_error = np.mean(errors) # 1つのパレートフロント全体/一部から1つのベジエ単体全体へのテスト誤差
 
             list_ave.append(test_error)
             list_time.append(tm)
@@ -588,7 +589,7 @@ class Test_bezier (unittest.TestCase):
                 log10(
                     degree_0_error_triangle_center / degree_0_error),
                 log10(
-                    0.1), # We get roughly this improvement in error, using the 32 core GPU on macOS Apple Sillicon M1 Max, but this is dependent on hardware
+                    0.5), # We get roughly this improvement in error, using the 32 core GPU on macOS Apple Sillicon M1 Max, but this is dependent on hardware
                 delta=0.5
             )
             
@@ -606,14 +607,14 @@ class Test_bezier (unittest.TestCase):
                 log10(
                     degree_8_error_triangle_center / degree_8_error),
                 log10(
-                    0.02), # We get roughly this improvement in error, using the 32 core GPU on macOS Apple Sillicon M1 Max, but this is dependent on hardware,
+                    0.2), # We get roughly this improvement in error, using the 32 core GPU on macOS Apple Sillicon M1 Max, but this is dependent on hardware,
                 delta=0.5
             )
             
         with self.subTest():
             self.assertAlmostEqual(
                 log10(
-                    degree_8_time_triangle_center  / degree_8_time),
+                    degree_8_time_triangle_center / degree_8_time),
                 log10(
                     0.5), # We get roughly this improvement in time, using the 32 core GPU on macOS Apple Sillicon M1 Max, but this is dependent on hardware,
                 delta=0.5
