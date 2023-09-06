@@ -4,7 +4,6 @@
 from math import log10
 import numpy as np
 import pandas as pd
-import random
 from sklearn.linear_model import ElasticNet
 import time
 import torch
@@ -421,6 +420,8 @@ def experiment_bezier(
     """
     Llist_ave = [] #テスト誤差が入るリスト
     Llist_time = [] #計算時間が入るリスト
+    
+    np.random.seed(0)
 
     w = make_w(triangle=triangle) #参照三角形を生成する関数
     #print(w)
@@ -452,7 +453,7 @@ def experiment_bezier(
     N_DATA = len(w)
     N_TEST = N_DATA // 10
     data_indices = list(range(N_DATA))  # [0, ..., 5150]
-    test_indices = random.sample(data_indices, N_TEST)  # indices to test data
+    test_indices = np.random.randint(low=0, high=N_DATA-1, size=N_TEST).tolist()  # indices to test data
     train_indices = [i for i in data_indices if i not in test_indices]  # indices to training data
 
     w_local = localize_w(w, triangle=triangle)
