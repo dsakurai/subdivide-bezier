@@ -531,26 +531,25 @@ class Test_bezier (unittest.TestCase):
 
         degree_0_error = np.median(avedf[0])
         degree_8_error = np.median(avedf[1])
-
-        with self.subTest():
+        
+        def assertAlmostEqual(value, expected):
             self.assertAlmostEqual(
                 log10(
-                    degree_8_error / degree_0_error),
+                    value),
                 log10(
-                    0.01),# We get roughly 100x improvements in approximating the input surface
-                delta=0.5
+                    expected),# using the 32 core GPU on macOS Apple Sillicon M1 Max, but this is dependent on hardware
+                delta=0.5,
+                msg=f"actual value: {value}"
             )
+            
+
+        with self.subTest():
+            assertAlmostEqual(degree_8_error/degree_0_error, 0.01)
 
         degree_0_time = np.median(timedf[0])
         degree_8_time  = np.median(timedf[1])
         with self.subTest():
-            self.assertAlmostEqual(
-                log10(
-                    degree_8_time / degree_0_time),
-                log10(
-                    10.0), # We get roughly 10x speed up in timing, using the 32 core GPU on macOS Apple Sillicon M1 Max, but this is dependent on hardware
-                delta=0.5
-            )
+            assertAlmostEqual(degree_8_time/degree_0_time, 10.0)
 
         avedf, timedf = experiment_bezier(triangle=[Subdivision.triangle_center], num_experiments=10, degrees=[0, 8]
                                           # datax=x, datay=y  # Load fish. (Comment this line to do this fitting with the default toy data)
@@ -560,64 +559,22 @@ class Test_bezier (unittest.TestCase):
         degree_8_error_triangle_center = np.median(avedf[1])
 
         with self.subTest():
-            error = degree_8_error_triangle_center/degree_0_error_triangle_center
-            self.assertAlmostEqual(
-                log10(
-                    error),
-                log10(
-                    0.01),# We get roughly this times improvements in approximating the input surface
-                delta=0.5,
-                msg=f"actual error: {error}"
-            )
+            assertAlmostEqual(degree_8_error_triangle_center/degree_0_error_triangle_center, 0.01)
         
         degree_0_time_triangle_center = np.median(timedf[0])
         degree_8_time_triangle_center  = np.median(timedf[1])
 
         with self.subTest():
-            self.assertAlmostEqual(
-                log10(
-                    degree_8_time_triangle_center/degree_0_time_triangle_center),
-                log10(
-                    12.0), # We get roughly 12x speed up in timing, using the 32 core GPU on macOS Apple Sillicon M1 Max, but this is dependent on hardware
-                delta=0.5
-            )
+            assertAlmostEqual(degree_8_time_triangle_center/degree_0_time_triangle_center,13.0)
 
         with self.subTest():
-            error = degree_0_error_triangle_center / degree_0_error
-            self.assertAlmostEqual(
-                log10(
-                    error),
-                log10(
-                    0.4), # We get roughly this improvement in error, using the 32 core GPU on macOS Apple Sillicon M1 Max, but this is dependent on hardware
-                delta=0.5,
-                msg=f"error: {error}"
-            )
+            assertAlmostEqual(degree_0_error_triangle_center/degree_0_error,0.4)
             
         with self.subTest():
-            self.assertAlmostEqual(
-                log10(
-                    degree_0_time_triangle_center / degree_0_time),
-                log10(
-                    0.5), # We get roughly this improvement in time, using the 32 core GPU on macOS Apple Sillicon M1 Max, but this is dependent on hardware,
-                delta=0.5
-            )
+            assertAlmostEqual(degree_0_time_triangle_center/degree_0_time,0.5)
 
         with self.subTest():
-            error = degree_8_error_triangle_center / degree_8_error
-            self.assertAlmostEqual(
-                log10(
-                    error),
-                log10(
-                    0.2), # We get roughly this improvement in error, using the 32 core GPU on macOS Apple Sillicon M1 Max, but this is dependent on hardware,
-                delta=0.5,
-                msg=f"actual error: {error}"
-            )
+            assertAlmostEqual(degree_8_error_triangle_center/degree_8_error,0.2)
             
         with self.subTest():
-            self.assertAlmostEqual(
-                log10(
-                    degree_8_time_triangle_center / degree_8_time),
-                log10(
-                    0.5), # We get roughly this improvement in time, using the 32 core GPU on macOS Apple Sillicon M1 Max, but this is dependent on hardware,
-                delta=0.5
-            )
+            assertAlmostEqual(degree_8_time_triangle_center/degree_8_time,0.5)
