@@ -288,12 +288,17 @@ def calc_EN(x, y, w):
     
     a_l = w_2_alpha_l1(w) # transform (w1, w2, w3) to the standard hyperparamenters, i.e. alpha and l1-ratio
     
-    for i in a_l:
+    for alpha, l1_ratio in a_l:
+    
+        # alpha and l1_ratio are prone to error. /Users/zaizenkiichi/PycharmProjects/pythonProject2/venv/lib/python3.8/site-packages/sklearn/linear_model/_coordinate_descent.py:648: ConvergenceWarning: Objective did not converge. You might want to increase the number of iterations, check the scale of the features or consider increasing regularisation. Duality gap: 1.473e+00, tolerance: 5.000e-04 Linear regression models with null weight for the l1 regularization term are more efficiently fitted using one of the solvers implemented in sklearn.linear_model.Ridge/RidgeCV instead.model = cd_fast.enet_coordinate_descent(
+        
+        alpha += 0.04 #0.04より小さいと収束しない　# TODO +0.04 をやめて線型回帰で置き換える
+        
         # TODO suspicious epsilon
-        if i[1] < 1 - 1e-4: # L1_ratio が大体 1e-4 より低い時にElastic Netが収束しない問題がある。　#todo小さい時は置き換える
-            i[1] += 1e-4 # continue # 要実験
-        elastic_net = ElasticNet(alpha = i[0] + 0.04, #0.04より小さいと収束しない　# TODO +0.04 をやめて線型回帰で置き換える
-                                 l1_ratio = i[1])  #li_ratio alpha 足さないとエラーが出る。 /Users/zaizenkiichi/PycharmProjects/pythonProject2/venv/lib/python3.8/site-packages/sklearn/linear_model/_coordinate_descent.py:648: ConvergenceWarning: Objective did not converge. You might want to increase the number of iterations, check the scale of the features or consider increasing regularisation. Duality gap: 1.473e+00, tolerance: 5.000e-04 Linear regression models with null weight for the l1 regularization term are more efficiently fitted using one of the solvers implemented in sklearn.linear_model.Ridge/RidgeCV instead.model = cd_fast.enet_coordinate_descent(
+        if l1_ratio < 1 - 1e-4: # L1_ratio が大体 1e-4 より低い時にElastic Netが収束しない問題がある。　#todo小さい時は置き換える
+            l1_ratio += 1e-4 # continue # 要実験
+
+        elastic_net = ElasticNet(alpha=alpha, l1_ratio=l1_ratio)
         elastic_net = elastic_net.fit(data_x, data_y)
         elastic_net_np = elastic_net.coef_.round(3)
         elastic_net_list = elastic_net_np.tolist()
