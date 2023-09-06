@@ -274,18 +274,21 @@ def w_2_alpha_l1(w):
     regcoef_df.to_csv("regcoef.csv",header=False, index=False, sep="\t")
     return ls
 
-def calc_EN(x, y, coef):
+def calc_EN(x, y, w):
     """
     エラスティックネットの計算をする。
     :param x: エラスティックネットの説明変数
     :param y: エラスティックネットの目的変数
-    :param coef:エラスティックネットのハイパーパラメータ
+    :param w:エラスティックネットのハイパーパラメータ
     :return:エラスティックネットの計算結果。パレート集合。
     """
     data_x = pd.DataFrame(x)
     data_y = pd.DataFrame(y)
     ls = [] # TODO change to Pandas dataframe?
-    for i in coef:
+    
+    a_l = w_2_alpha_l1(w) # transform (w1, w2, w3) to the standard hyperparamenters, i.e. alpha and l1-ratio
+    
+    for i in a_l:
         # TODO suspicious epsilon
         if i[1] < 1 - 1e-4: # L1_ratio が大体 1e-4 より低い時にElastic Netが収束しない問題がある。　#todo小さい時は置き換える
             i[1] += 1e-4 # continue # 要実験
@@ -416,9 +419,8 @@ def experiment_bezier(
 
     w = make_w(triangle=triangle) #参照三角形を生成する関数
     #print(w)
-    coef = w_2_alpha_l1(w) #入力の三角形に合わせてwをElastic Netのハイパーパラメタに変換
     #print(coef)
-    pareto_set = calc_EN(datax, datay, coef)  #パレートセットを計算
+    pareto_set = calc_EN(datax, datay, w)  #パレートセットを計算
 
     class temp: # Dirty trick: convert the list to pandas dataframe
         df_pareto_set = pd.DataFrame(pareto_set)
