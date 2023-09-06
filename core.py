@@ -334,19 +334,18 @@ def f3_perturbed(thetas):
     X = np.array(thetas)
     return (np.linalg.norm(X, ord = 2)**2)/2 + eps * f3(thetas)
 
-def compute_pareto_front(x, y, pareto_set):
+def f_perturbed(x, y, thetas):
     """
     パレートフロントを計算する。
     :param x: エラスティックネットの説明変数
     :param y: エラスティックネットの目的変数
-    :param pareto_set: パレート集合
+    :param pareto_set: パレート集合の点 (theta_0, theta_1, ...)
     :return: パレートフロント
     """
     return [
-        [ f1_perturbed(x, y, thetas).tolist(),
-          f2_perturbed(thetas).tolist(),
-          f3_perturbed(thetas).tolist()]
-        for thetas in pareto_set
+        f1_perturbed(x, y, thetas).tolist(),
+        f2_perturbed(thetas).tolist(),
+        f3_perturbed(thetas).tolist()
     ]
 
 def fit_bezier_simplex(
@@ -400,9 +399,6 @@ def experiment_bezier(
         # fig = px.scatter_3d(df_pareto_set, x=0, y=1, z=2, title="The input solution map (path) of elastic net")
         # fig.show()
 
-    f = compute_pareto_front(datax, datay, pareto_set) #パレートフロントを計算
-
-
     N_DATA = len(w)
     N_TEST = N_DATA // 10
     
@@ -417,8 +413,8 @@ def experiment_bezier(
     #
     # Ground truth coordinate positions (i.e. list of Pareto set x Pareto front in elastic net)
     pareto_set_x_front_ground_truth = torch.tensor([
-        # Join (x_0, x_1, ...) and (f_0, f_2, f_3)
-        pareto_set[i] + f[i] for i in range(len(pareto_set))
+        # Join (theta_0, theta_1,  ...) and (f_0, f_2, f_3)
+        thetas + f_perturbed(datax, datay, thetas) for thetas in pareto_set
     ])
     #
     # Training dataset (subset of the ground truth)
