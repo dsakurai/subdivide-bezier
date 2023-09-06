@@ -377,6 +377,19 @@ def make_data_file():
     df.to_csv("dataf123.csv",header=False, index=False, sep="\t")
     return ls
 
+def fit_bezier_simplex(
+        df_pareto: pd.DataFrame,
+        triangle: [int],
+        degree: [int],
+    ):
+    """
+    :param df_pareto: Pareto set, front, or both.
+    :param triangle: The triangle in the subdivision.
+    :param degree: Degree of the bezier simplex fitting
+    :return: 
+    """
+    pass
+
 def experiment_bezier(
         triangle: [int] = [],
         num_experiments: [int] = 5,
@@ -386,7 +399,6 @@ def experiment_bezier(
     ) -> ([float], [float]):
     """
     Run experiments of Bezier fitting.
-    We 
     :param triangle: The choice of the subdivided triangle. The default is actually the largest triangle, i.e. the whole triangle
     :param num_experiments:  Run the fitting and evaluation this many times
     :param degrees: orders of polynomial in Bezier simplex fitting. The default is [1, 2,.., 30].
