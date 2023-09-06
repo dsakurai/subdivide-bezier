@@ -4,7 +4,7 @@
 from math import log10
 import numpy as np
 import pandas as pd
-from sklearn.linear_model import ElasticNet
+from sklearn.linear_model import LinearRegression, ElasticNet
 import time
 import torch
 import torch_bsf
@@ -289,19 +289,26 @@ def calc_EN(x, y, w):
     
     for alpha, l1_ratio in a_l:
     
-        # alpha and l1_ratio are prone to error. /Users/zaizenkiichi/PycharmProjects/pythonProject2/venv/lib/python3.8/site-packages/sklearn/linear_model/_coordinate_descent.py:648: ConvergenceWarning: Objective did not converge. You might want to increase the number of iterations, check the scale of the features or consider increasing regularisation. Duality gap: 1.473e+00, tolerance: 5.000e-04 Linear regression models with null weight for the l1 regularization term are more efficiently fitted using one of the solvers implemented in sklearn.linear_model.Ridge/RidgeCV instead.model = cd_fast.enet_coordinate_descent(
-        
-        alpha = max(0.04, alpha) #0.04より小さいと収束しない　# TODO +0.04 をやめて線型回帰で置き換える
         
         # TODO suspicious epsilon
         if l1_ratio < 1 - 1e-4: # L1_ratio が大体 1e-4 より低い時にElastic Netが収束しない問題がある。　#todo小さい時は置き換える
             l1_ratio += 1e-4 # continue # 要実験
+            
+        def fit(model):
+            elastic_net      = model.fit(data_x, data_y)
+            elastic_net_np   = elastic_net.coef_.round(3) # TODO why round the array?
+            return elastic_net_np.tolist()
 
-        elastic_net = ElasticNet(alpha=alpha, l1_ratio=l1_ratio)
-        elastic_net = elastic_net.fit(data_x, data_y)
-        elastic_net_np = elastic_net.coef_.round(3)
-        elastic_net_list = elastic_net_np.tolist()
-        ls.append(elastic_net_list)
+        # alpha and l1_ratio are prone to error. /Users/zaizenkiichi/PycharmProjects/pythonProject2/venv/lib/python3.8/site-packages/sklearn/linear_model/_coordinate_descent.py:648: ConvergenceWarning: Objective did not converge. You might want to increase the number of iterations, check the scale of the features or consider increasing regularisation. Duality gap: 1.473e+00, tolerance: 5.000e-04 Linear regression models with null weight for the l1 regularization term are more efficiently fitted using one of the solvers implemented in sklearn.linear_model.Ridge/RidgeCV instead.model = cd_fast.enet_coordinate_descent(
+        
+        if alpha < 0.04: # Scikit-learn tends to fail to converge ElasticNet under this setting.
+            coefficients = fit(LinearRegression())
+            coefficients = coefficients[0] # ElasticNet weirdness in Scikit-learn...
+
+        else: # Do ElasticNet
+            coefficients = fit(ElasticNet(alpha=alpha, l1_ratio=l1_ratio))
+
+        ls.append(coefficients)
 
     return ls
 
