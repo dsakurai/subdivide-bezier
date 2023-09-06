@@ -254,7 +254,7 @@ def calc_L1_ratio(w0, w1, eps):
     b = w1 / (1 - w0 + eps)
     return b
 
-def trans_param(w):
+def w_2_alpha_l1(w):
     """
     参照三角形上の座標をエラスティックネットの計算用のハイパーパラメータに変換する
     :param w: 変換される座標
@@ -416,7 +416,7 @@ def experiment_bezier(
 
     w = make_w(triangle=triangle) #参照三角形を生成する関数
     #print(w)
-    coef = trans_param(w) #入力の三角形に合わせてwをElastic Netのハイパーパラメタに変換
+    coef = w_2_alpha_l1(w) #入力の三角形に合わせてwをElastic Netのハイパーパラメタに変換
     #print(coef)
     pareto_set = calc_EN(datax, datay, coef)  #パレートセットを計算
 
