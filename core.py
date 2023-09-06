@@ -465,8 +465,8 @@ def experiment_bezier(
         pareto_set_x_front_ground_truth.detach().numpy()[i] for i in train_indices
     ])
     
-    w_local_train = torch.tensor([w_local[id] for id in train_indices])
-    w_local_tensor       = torch.tensor( w_local    ) # TODO no point storing this in a tensor instance
+    w_local_train  = torch.tensor([w_local[id] for id in train_indices])
+    w_local_tensor = torch.tensor( w_local    ) # TODO no point storing this in a tensor instance
     
     # xdf = pd.DataFrame(torch.tensor(pareto_set_x_front_ground_truth)[:, 0:3], columns=['sf1','sf2','sf3'])
     # fig = px.scatter_3d(xdf, x='sf1', y='sf2', z='sf3')
