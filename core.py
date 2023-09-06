@@ -181,15 +181,15 @@ def trans(triangle, bnd, w):
             tlist.append(tlist2)
     return tlist
 
-def maket(
+def localize_w(
         w,
         triangle: [int] = [] # default: largest triangle
 ):
     """
     参照三角形をベジエ単体近似に使えるようにパラメータを変換する。変換する三角形の三辺の境界を見つけてtrans()を呼ぶ
-    :param w: 変換される三角形上の座標
-    :param triangle: 変換される三角形
-    :return: 変換された座標
+    :param w: (w1, w2, w3) in the original triangle
+    :param triangle: a triangle in the subdivision
+    :return: w in coordinates localized within `triangle`
     """
     border = [0.0, 0.0, 0.0]
     if len(triangle) == 0:
@@ -448,25 +448,30 @@ def experiment_bezier(
     test_indices = random.sample(data_indices, N_TEST)  # indices to test data
     train_indices = [i for i in data_indices if i not in test_indices]  # indices to training data
 
-    t = maket(w, triangle=triangle)
-    tt = []
+    w_local = localize_w(w, triangle=triangle)
+    
+    def samples_to_tensor(w, train_indices):
+        tt = []
+        for i in train_indices:
+            tt.append(w[i])
+        return torch.tensor(tt)
+    
     sf = [] # Pareto set x front
 
     for i in train_indices:
-        tt.append(t[i])
         sfi = []
         for j in range(len(pareto_set[0])):
             sfi.append(pareto_set[i][j])
         for k in range(3):
             sfi.append(f[i][k])
         sf.append(sfi)
-    tt = torch.tensor(tt)
     sf = torch.tensor(sf)
-    t = torch.tensor(t)
-    ground_truth = torch.tensor(ground_truth)
+    w_local_train_tensor = samples_to_tensor(w=w_local, train_indices=train_indices)
+    w_local_tensor = torch.tensor(w_local)
+    ground_truth_tensor = torch.tensor(ground_truth)
     #xdf = pd.DataFrame(s[:, 3:6], columns=['01','02','03'])
     #xdf = pd.DataFrame(f, columns=['f1','f2','f3'])
-    # xdf = pd.DataFrame(ground_truth[:, 0:3], columns=['sf1','sf2','sf3'])
+    # xdf = pd.DataFrame(torch.tensor(ground_truth)[:, 0:3], columns=['sf1','sf2','sf3'])
     # fig = px.scatter_3d(xdf, x='sf1', y='sf2', z='sf3')
     # fig.show()
 
@@ -478,7 +483,10 @@ def experiment_bezier(
         for d in degrees:#どの次数まで計算するか
             start = time.perf_counter()
             #b = torch_bsf.fit(params=tt, values=ss, degree=d)
-            bezier_simplex = torch_bsf.fit(params=tt, values=sf, degree=d) # w -> fの対応関係を訓練したベジエ単体：単体から3次元空間への関数
+            bezier_simplex = torch_bsf.fit(
+                params=w_local_train_tensor,
+                values=sf,
+                degree=d) # w -> fの対応関係を訓練したベジエ単体：単体から3次元空間への関数
             end = time.perf_counter()
             tm = end - start
             _, bts = bezier_simplex.meshgrid(num=100)
@@ -488,7 +496,11 @@ def experiment_bezier(
             # fig.show()
             test_error = 0
             for i in test_indices:
-                test_error += np.square(ground_truth[i].detach().numpy() - bezier_simplex(t)[i].detach().numpy())
+                test_error += np.square(
+                    ground_truth_tensor[i].detach().numpy()
+                    - bezier_simplex(
+                        w_local_tensor
+                            )[i].detach().numpy())
             test_error = np.mean(test_error) # 1つのパレートフロント全体/一部から1つのベジエ単体全体へのテスト誤差
 
             list_ave.append(test_error)
