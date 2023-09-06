@@ -440,19 +440,18 @@ def experiment_bezier(
 
     f = calc_PF(datax, datay, pareto_set) #パレートフロントを計算
     #make_data_file() #パレートセットのファイルとパレートフロントのファイルを合体
+
+
+    N_DATA = len(w)
+    N_TEST = N_DATA // 10
     
     # Ground truth coordinate positions (i.e. list of Pareto set x Pareto front in elastic net)
     ground_truth = []
     for i in range(len(pareto_set)):
-        list2 = []
-        for j in range(len(pareto_set[0])):
-            list2.append(pareto_set[i][j])
-        for k in range(3):
-            list2.append(f[i][k])
-        ground_truth.append(list2)
-
-    N_DATA = len(w)
-    N_TEST = N_DATA // 10
+        ground_truth.append([
+            pareto_set[i] + f[i]
+        ])
+        
     data_indices = list(range(N_DATA))  # [0, ..., 5150]
     test_indices = np.random.randint(low=0, high=N_DATA-1, size=N_TEST).tolist()  # indices to test data
     train_indices = [i for i in data_indices if i not in test_indices]  # indices to training data
