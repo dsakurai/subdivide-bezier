@@ -469,7 +469,7 @@ def experiment_bezier(
         sf.append(sfi)
     sf = torch.tensor(sf)
     w_local_train_tensor = torch.tensor([w_local[id] for id in train_indices])
-    w_local_tensor = torch.tensor(w_local) # TODO no point storing this in a tensor instance
+    w_local_tensor       = torch.tensor( w_local    ) # TODO no point storing this in a tensor instance
     ground_truth_tensor = torch.tensor(ground_truth)
     #xdf = pd.DataFrame(s[:, 3:6], columns=['01','02','03'])
     #xdf = pd.DataFrame(f, columns=['f1','f2','f3'])
