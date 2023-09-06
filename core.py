@@ -428,8 +428,8 @@ def experiment_bezier(
     approximation_errors = [] #テスト誤差が入るリスト
     training_timings = [] #計算時間が入るリスト
     for j in range(num_experiments):#実験の回数
-        approximation_errors_d = []
-        training_timings_d = []
+        approximation_errors_j = []
+        training_timings_j = []
 
         for d in degrees:
         
@@ -455,15 +455,15 @@ def experiment_bezier(
                 for i in test_indices
             ]
 
-            approximation_errors_d.append(
+            approximation_errors_j.append(
                 np.mean(errors)) # 1つのパレートフロント全体/一部から1つのベジエ単体全体へのテスト誤差
-            training_timings_d.append(time_end - time_start)
+            training_timings_j.append(time_end - time_start)
 
-        approximation_errors.append(approximation_errors_d)
-        training_timings.append(training_timings_d)
+        approximation_errors.append(approximation_errors_j)
+        training_timings.append(training_timings_j)
 
-    return (pd.DataFrame(approximation_errors),
-            pd.DataFrame(training_timings))
+    return (pd.DataFrame(approximation_errors, columns=degrees),
+            pd.DataFrame(training_timings,     columns=degrees))
 
 
 class Test_bezier (unittest.TestCase):
@@ -481,12 +481,12 @@ class Test_bezier (unittest.TestCase):
         # y = y.values.flatten().tolist()
 
         # Test without subdivision
-        avedf, timedf = experiment_bezier(triangle=[], num_experiments=10, degrees=[0, 8],
+        approximation_errors, training_timings = experiment_bezier(triangle=[], num_experiments=10, degrees=[0, 8],
                                           # datax=x, datay=y  # Load fish. (Comment out this line to do this fitting with the default toy data)
                                           )
 
-        degree_0_error = np.median(avedf[0])
-        degree_8_error = np.median(avedf[1])
+        degree_0_error = np.median(approximation_errors[0])
+        degree_8_error = np.median(approximation_errors[8])
         
         def assertAlmostEqual(value, expected):
             self.assertAlmostEqual(
@@ -501,22 +501,22 @@ class Test_bezier (unittest.TestCase):
 
         assertAlmostEqual(degree_8_error/degree_0_error, 0.01)
 
-        degree_0_time = np.median(timedf[0])
-        degree_8_time  = np.median(timedf[1])
+        degree_0_time = np.median(training_timings[0])
+        degree_8_time = np.median(training_timings[8])
         
         assertAlmostEqual(degree_8_time/degree_0_time, 10.0)
 
-        avedf, timedf = experiment_bezier(triangle=[Subdivision.triangle_center], num_experiments=10, degrees=[0, 8]
+        approximation_errors, training_timings = experiment_bezier(triangle=[Subdivision.triangle_center], num_experiments=10, degrees=[0, 8]
                                           # datax=x, datay=y  # Load fish. (Comment this line to do this fitting with the default toy data)
                                           )
 
-        degree_0_error_triangle_center = np.median(avedf[0])
-        degree_8_error_triangle_center = np.median(avedf[1])
+        degree_0_error_triangle_center = np.median(approximation_errors[0])
+        degree_8_error_triangle_center = np.median(approximation_errors[8])
 
         assertAlmostEqual(degree_8_error_triangle_center/degree_0_error_triangle_center, 0.01)
         
-        degree_0_time_triangle_center = np.median(timedf[0])
-        degree_8_time_triangle_center  = np.median(timedf[1])
+        degree_0_time_triangle_center = np.median(training_timings[0])
+        degree_8_time_triangle_center = np.median(training_timings[8])
 
         assertAlmostEqual(degree_8_time_triangle_center/degree_0_time_triangle_center,13.0)
 
