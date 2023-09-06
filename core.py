@@ -498,9 +498,7 @@ def experiment_bezier(
             for i in test_indices:
                 test_error += np.square(
                     ground_truth_tensor[i].detach().numpy()
-                    - bezier_simplex(
-                        w_local_tensor
-                            )[i].detach().numpy())
+                    - bezier_simplex(w_local_tensor)[i].detach().numpy())
             test_error = np.mean(test_error) # 1つのパレートフロント全体/一部から1つのベジエ単体全体へのテスト誤差
 
             list_ave.append(test_error)
