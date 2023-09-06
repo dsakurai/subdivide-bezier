@@ -311,28 +311,28 @@ def f3(coef):
     return np.linalg.norm(X, ord = 2)**2
 
 # TODO what's this function?
-def f1c(data_x, data_y, coef):
+def f1_perturbed(data_x, data_y, thetas):
     #calc 1/2M||X0 - y||^2
     #np.matmul(data_x, coef.T) = X0
     #(np.matmul(data_x, coef.T) - data_y) = X0 - y
-    coef = np.array(coef)
+    thetas = np.array(thetas)
     M = 0
     for _ in data_x:
         M += 1
-    g = (np.linalg.norm((np.matmul(data_x, coef.T) - data_y).T, ord = 2)**2)/(2*M)
-    return g + eps * f3(coef)
+    g = (np.linalg.norm((np.matmul(data_x, thetas.T) - data_y).T, ord = 2) ** 2) / (2 * M)
+    return g + eps * f3(thetas)
 
 # TODO what's this function?
-def f2c(coef):
+def f2_perturbed(thetas):
     #calc |0|
-    X = np.array(coef)
-    return np.linalg.norm(X, ord = 1) + eps * f3(coef)
+    X = np.array(thetas)
+    return np.linalg.norm(X, ord = 1) + eps * f3(thetas)
 
 # TODO what's this function?
-def f3c(coef):
+def f3_perturbed(thetas):
     #calc 1/2||0||^2
-    X = np.array(coef)
-    return (np.linalg.norm(X, ord = 2)**2)/2 + eps * f3(coef)
+    X = np.array(thetas)
+    return (np.linalg.norm(X, ord = 2)**2)/2 + eps * f3(thetas)
 
 def calc_PF(x, y, pareto_set):
     """
@@ -343,11 +343,11 @@ def calc_PF(x, y, pareto_set):
     :return: パレートフロント
     """
     ls = []
-    for i in pareto_set:
+    for thetas in pareto_set:
         list2 = []
-        a = f1c(x, y, i)
-        b = f2c(i)
-        c = f3c(i)
+        a = f1_perturbed(x, y, thetas)
+        b = f2_perturbed(thetas)
+        c = f3_perturbed(thetas)
 
         d = a.tolist()
         e = b.tolist()
