@@ -467,7 +467,7 @@ def experiment_bezier(
         sf.append(sfi)
     sf = torch.tensor(sf)
     w_local_train_tensor = samples_to_tensor(w=w_local, train_indices=train_indices)
-    w_local_tensor = torch.tensor(w_local)
+    w_local_tensor = torch.tensor(w_local) # TODO no point storing this in a tensor instance
     ground_truth_tensor = torch.tensor(ground_truth)
     #xdf = pd.DataFrame(s[:, 3:6], columns=['01','02','03'])
     #xdf = pd.DataFrame(f, columns=['f1','f2','f3'])
@@ -498,7 +498,8 @@ def experiment_bezier(
             for i in test_indices:
                 test_error += np.square(
                     ground_truth_tensor[i].detach().numpy()
-                    - bezier_simplex(w_local_tensor)[i].detach().numpy())
+                    # [w1, w2, w3] for index i
+                    - bezier_simplex(w_local_tensor.detach().numpy()[i].reshape(1,3)).detach().numpy())
             test_error = np.mean(test_error) # 1つのパレートフロント全体/一部から1つのベジエ単体全体へのテスト誤差
 
             list_ave.append(test_error)
