@@ -168,8 +168,7 @@ def make_t(
     border = [0.0, 0.0, 0.0]
     if len(triangle) == 0:
         tlist = trans(triangle, border, w)
-        df = pd.DataFrame(tlist)
-        df.to_csv("datat123.csv",header=False, index=False, sep="\t")
+        # df = pd.DataFrame(tlist)
         return tlist
 
     def boundary(
@@ -247,8 +246,7 @@ def make_t(
 
     print(border)
     tlist = trans(triangle, border, w)
-    df = pd.DataFrame(tlist)
-    df.to_csv("datat123.csv",header=False, index=False, sep="\t")
+    # df = pd.DataFrame(tlist)
     return tlist
 
 def maket(
@@ -257,8 +255,7 @@ def maket(
     border = [0.0, 0.0, 0.0]
     if len(triangle) == 0:
         tlist = trans(triangle, border, w)
-        df = pd.DataFrame(tlist)
-        df.to_csv("datat123.csv",header=False, index=False, sep="\t")
+        # df = pd.DataFrame(tlist)
         return tlist
 
     def boundary(
@@ -305,8 +302,7 @@ def maket(
         i += 1
     print(border)
     tlist = trans(triangle, border, w)
-    df = pd.DataFrame(tlist)
-    df.to_csv("datat123.csv",header=False, index=False, sep="\t")
+    # df = pd.DataFrame(tlist)
     return tlist
 
 

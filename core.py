@@ -193,8 +193,7 @@ def localize_w(
     border = [0.0, 0.0, 0.0]
     if len(triangle) == 0:
         tlist = trans(triangle, border, w)
-        df = pd.DataFrame(tlist)
-        df.to_csv("datat123.csv",header=False, index=False, sep="\t")
+        # df = pd.DataFrame(tlist)
         return tlist
 
     def boundary(
@@ -239,10 +238,8 @@ def localize_w(
         if i == len(triangle) - 1:
             break
         i += 1
-    print(border)
     tlist = trans(triangle, border, w)
-    df = pd.DataFrame(tlist)
-    df.to_csv("datat123.csv",header=False, index=False, sep="\t")
+    # df = pd.DataFrame(tlist)
     return tlist
 
 def calc_alpha(w0, eps):
@@ -269,8 +266,7 @@ def w_2_alpha_l1(w):
         list2.append(L1_ratio)
         ls.append(list2)
 
-    regcoef_df = pd.DataFrame(ls)
-    regcoef_df.to_csv("regcoef.csv",header=False, index=False, sep="\t")
+    # regcoef_df = pd.DataFrame(ls)
     return ls
 
 def calc_EN(x, y, w):
@@ -365,29 +361,7 @@ def calc_PF(x, y, pareto_set):
         list2.append(f)
         ls.append(list2)
 
-    df = pd.DataFrame(ls)
-    df.to_csv("pareto_front.csv",header=False, index=False, sep="\t")
-    return ls
-
-def make_data_file():
-    """
-    パレート集合とパレートフロントを一つのファイルにまとめる。
-    :return:まとめたファイル
-    """
-    pareto_set = np.loadtxt("elastic_net.csv")
-    pareto_front = np.loadtxt("pareto_front.csv")
-    ls = []
-    pareto_set_list = pareto_set.tolist()
-    pareto_front_list = pareto_front.tolist()
-    for i in range(len(pareto_set_list)):
-        list2 = []
-        for j in range(len(pareto_set_list[0])):
-            list2.append(pareto_set_list[i][j])
-        for k in range(3):
-            list2.append(pareto_front_list[i][k])
-        ls.append(list2)
-    df = pd.DataFrame(list)
-    df.to_csv("dataf123.csv",header=False, index=False, sep="\t")
+    # df = pd.DataFrame(ls)
     return ls
 
 def fit_bezier_simplex(
@@ -441,11 +415,7 @@ def experiment_bezier(
         # fig = px.scatter_3d(df_pareto_set, x=0, y=1, z=2, title="The input solution map (path) of elastic net")
         # fig.show()
 
-        #TODO suspicous writing (this file is actually used for joining CSVS; should be done without IO, though)
-        df_pareto_set.to_csv("elastic_net.csv",header=False, index=False, sep="\t")
-
     f = calc_PF(datax, datay, pareto_set) #パレートフロントを計算
-    #make_data_file() #パレートセットのファイルとパレートフロントのファイルを合体
 
 
     N_DATA = len(w)
@@ -532,8 +502,6 @@ class Test_bezier (unittest.TestCase):
         avedf, timedf = experiment_bezier(triangle=[], num_experiments=10, degrees=[0, 8],
                                           # datax=x, datay=y  # Load fish. (Comment out this line to do this fitting with the default toy data)
                                           )
-        # avedf.to_csv("ave_err.csv",header=False, index=False, sep="\t")
-        # timedf.to_csv("calc_time.csv",header=False, index=False, sep="\t")
 
         degree_0_error = np.median(avedf[0])
         degree_8_error = np.median(avedf[1])
