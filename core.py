@@ -382,8 +382,6 @@ def experiment_bezier(
     The default data are from Mizota et al. (arXiv:2106.12704v1). However, in their computation they normalize the data beforehand.
     As we are supplying the original datax and datay, the fitting result looks different. 
     """
-    Llist_ave = [] #テスト誤差が入るリスト
-    Llist_time = [] #計算時間が入るリスト
     
     np.random.seed(0)
 
@@ -427,9 +425,11 @@ def experiment_bezier(
 
     # Use torch_bsf to learn the solution paths (i.e. solution map)
 
+    Llist_ave = [] #テスト誤差が入るリスト
+    Llist_time = [] #計算時間が入るリスト
     for j in range(num_experiments):#実験の回数
-        list_ave = []
-        list_time = []
+        approximation_errors = []
+        training_timings = []
 
         for d in degrees:
         
@@ -456,10 +456,10 @@ def experiment_bezier(
             ]
             test_error = np.mean(errors) # 1つのパレートフロント全体/一部から1つのベジエ単体全体へのテスト誤差
 
-            list_ave.append(test_error)
-            list_time.append(time_end - time_start)
-        Llist_ave.append(list_ave)
-        Llist_time.append(list_time)
+            approximation_errors.append(test_error)
+            training_timings.append(time_end - time_start)
+        Llist_ave.append(approximation_errors)
+        Llist_time.append(training_timings)
 
     return (pd.DataFrame(Llist_ave),
             pd.DataFrame(Llist_time))
