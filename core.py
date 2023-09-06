@@ -428,8 +428,8 @@ def experiment_bezier(
     Llist_ave = [] #テスト誤差が入るリスト
     Llist_time = [] #計算時間が入るリスト
     for j in range(num_experiments):#実験の回数
-        approximation_errors = []
-        training_timings = []
+        approximation_errors_d = []
+        training_timings_d = []
 
         for d in degrees:
         
@@ -454,12 +454,13 @@ def experiment_bezier(
                     - bezier_simplex(w_local_tensor.detach().numpy()[i].reshape(1,3)).detach().numpy())
                 for i in test_indices
             ]
-            test_error = np.mean(errors) # 1つのパレートフロント全体/一部から1つのベジエ単体全体へのテスト誤差
 
-            approximation_errors.append(test_error)
-            training_timings.append(time_end - time_start)
-        Llist_ave.append(approximation_errors)
-        Llist_time.append(training_timings)
+            approximation_errors_d.append(
+                np.mean(errors)) # 1つのパレートフロント全体/一部から1つのベジエ単体全体へのテスト誤差
+            training_timings_d.append(time_end - time_start)
+
+        Llist_ave.append(approximation_errors_d)
+        Llist_time.append(training_timings_d)
 
     return (pd.DataFrame(Llist_ave),
             pd.DataFrame(Llist_time))
