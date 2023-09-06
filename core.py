@@ -543,13 +543,12 @@ class Test_bezier (unittest.TestCase):
             )
             
 
-        with self.subTest():
-            assertAlmostEqual(degree_8_error/degree_0_error, 0.01)
+        assertAlmostEqual(degree_8_error/degree_0_error, 0.01)
 
         degree_0_time = np.median(timedf[0])
         degree_8_time  = np.median(timedf[1])
-        with self.subTest():
-            assertAlmostEqual(degree_8_time/degree_0_time, 10.0)
+        
+        assertAlmostEqual(degree_8_time/degree_0_time, 10.0)
 
         avedf, timedf = experiment_bezier(triangle=[Subdivision.triangle_center], num_experiments=10, degrees=[0, 8]
                                           # datax=x, datay=y  # Load fish. (Comment this line to do this fitting with the default toy data)
@@ -558,23 +557,17 @@ class Test_bezier (unittest.TestCase):
         degree_0_error_triangle_center = np.median(avedf[0])
         degree_8_error_triangle_center = np.median(avedf[1])
 
-        with self.subTest():
-            assertAlmostEqual(degree_8_error_triangle_center/degree_0_error_triangle_center, 0.01)
+        assertAlmostEqual(degree_8_error_triangle_center/degree_0_error_triangle_center, 0.01)
         
         degree_0_time_triangle_center = np.median(timedf[0])
         degree_8_time_triangle_center  = np.median(timedf[1])
 
-        with self.subTest():
-            assertAlmostEqual(degree_8_time_triangle_center/degree_0_time_triangle_center,13.0)
+        assertAlmostEqual(degree_8_time_triangle_center/degree_0_time_triangle_center,13.0)
 
-        with self.subTest():
-            assertAlmostEqual(degree_0_error_triangle_center/degree_0_error,0.4)
+        assertAlmostEqual(degree_0_error_triangle_center/degree_0_error,0.4)
             
-        with self.subTest():
-            assertAlmostEqual(degree_0_time_triangle_center/degree_0_time,0.5)
+        assertAlmostEqual(degree_0_time_triangle_center/degree_0_time,0.5)
 
-        with self.subTest():
-            assertAlmostEqual(degree_8_error_triangle_center/degree_8_error,0.2)
+        assertAlmostEqual(degree_8_error_triangle_center/degree_8_error,0.2)
             
-        with self.subTest():
-            assertAlmostEqual(degree_8_time_triangle_center/degree_8_time,0.5)
+        assertAlmostEqual(degree_8_time_triangle_center/degree_8_time,0.5)
