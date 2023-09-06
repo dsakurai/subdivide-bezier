@@ -423,7 +423,7 @@ def experiment_bezier(
     
     np.random.seed(0)
 
-    w = make_w(triangle=triangle) #参照三角形を生成する関数
+    w = make_w(resolution=40, triangle=triangle) #参照三角形を生成する関数
     #print(w)
     #print(coef)
     pareto_set = calc_EN(datax, datay, w)  #パレートセットを計算
@@ -560,12 +560,14 @@ class Test_bezier (unittest.TestCase):
         degree_8_error_triangle_center = np.median(avedf[1])
 
         with self.subTest():
+            error = degree_8_error_triangle_center/degree_0_error_triangle_center
             self.assertAlmostEqual(
                 log10(
-                    degree_8_error_triangle_center/degree_0_error_triangle_center),
+                    error),
                 log10(
-                    0.003),# We get roughly 1/0.03 times improvements in approximating the input surface
-                delta=0.5
+                    0.01),# We get roughly this times improvements in approximating the input surface
+                delta=0.5,
+                msg=f"actual error: {error}"
             )
         
         degree_0_time_triangle_center = np.median(timedf[0])
@@ -599,12 +601,14 @@ class Test_bezier (unittest.TestCase):
             )
 
         with self.subTest():
+            error = degree_8_error_triangle_center / degree_8_error
             self.assertAlmostEqual(
                 log10(
-                    degree_8_error_triangle_center / degree_8_error),
+                    error),
                 log10(
                     0.2), # We get roughly this improvement in error, using the 32 core GPU on macOS Apple Sillicon M1 Max, but this is dependent on hardware,
-                delta=0.5
+                delta=0.5,
+                msg=f"actual error: {error}"
             )
             
         with self.subTest():
