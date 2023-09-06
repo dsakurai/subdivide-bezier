@@ -466,7 +466,7 @@ def experiment_bezier(
     ground_truth = torch.tensor(ground_truth)
     #xdf = pd.DataFrame(s[:, 3:6], columns=['01','02','03'])
     #xdf = pd.DataFrame(f, columns=['f1','f2','f3'])
-    xdf = pd.DataFrame(ground_truth[:, 0:3], columns=['sf1','sf2','sf3'])
+    # xdf = pd.DataFrame(ground_truth[:, 0:3], columns=['sf1','sf2','sf3'])
     # fig = px.scatter_3d(xdf, x='sf1', y='sf2', z='sf3')
     # fig.show()
 
@@ -482,7 +482,7 @@ def experiment_bezier(
             end = time.perf_counter()
             tm = end - start
             _, bts = bezier_simplex.meshgrid(num=100)
-            bts = bts.detach()
+            bts = bts.detach() # TODO can we remove this line?
             # df = pd.DataFrame(bts[:, 0:3],columns=['sf1','sf2','sf3'])
             # fig = px.scatter_3d(df, x='sf1', y='sf2', z='sf3')
             # fig.show()
