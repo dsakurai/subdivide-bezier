@@ -312,7 +312,7 @@ def f3(coef):
     return np.linalg.norm(X, ord = 2)**2
 
 # TODO suspicious epsilon
-eps = 1e-4 # 16 で良いのか？ 16はかなり小さい（数値誤差に埋もれやすい） 1e-4, 1e-3, 1e-2 などで実験
+eps = 1e-4
 
 # TODO what's this function?
 def f1c(data_x, data_y, coef):
