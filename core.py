@@ -487,17 +487,17 @@ def experiment_bezier(
         for d in degrees:#どの次数まで計算するか
             start = time.perf_counter()
             #b = torch_bsf.fit(params=tt, values=ss, degree=d)
-            b = torch_bsf.fit(params=tt, values=sf, degree=d) # w -> fの対応関係を訓練したベジエ単体：単体から3次元空間への関数
+            bezier_simplex = torch_bsf.fit(params=tt, values=sf, degree=d) # w -> fの対応関係を訓練したベジエ単体：単体から3次元空間への関数
             end = time.perf_counter()
             tm = end - start
-            _, bts = b.meshgrid(num=100)
+            _, bts = bezier_simplex.meshgrid(num=100)
             bts = bts.detach()
             # df = pd.DataFrame(bts[:, 0:3],columns=['sf1','sf2','sf3'])
             # fig = px.scatter_3d(df, x='sf1', y='sf2', z='sf3')
             # fig.show()
             test_error = 0
             for i in test_indices:
-                test_error += np.square(ground_truth[i].detach().numpy() - b(t)[i].detach().numpy())
+                test_error += np.square(ground_truth[i].detach().numpy() - bezier_simplex(t)[i].detach().numpy())
             test_error = np.mean(test_error) # 1つのパレートフロント全体/一部から1つのベジエ単体全体へのテスト誤差
 
             list_ave.append(test_error)
