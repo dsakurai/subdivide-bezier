@@ -458,12 +458,6 @@ def experiment_bezier(
 
     w_local = localize_w(w, triangle=triangle)
     
-    def samples_to_tensor(w, train_indices):
-        tt = []
-        for i in train_indices:
-            tt.append(w[i])
-        return torch.tensor(tt)
-    
     sf = [] # Pareto set x front
 
     for i in train_indices:
@@ -474,7 +468,7 @@ def experiment_bezier(
             sfi.append(f[i][k])
         sf.append(sfi)
     sf = torch.tensor(sf)
-    w_local_train_tensor = samples_to_tensor(w=w_local, train_indices=train_indices)
+    w_local_train_tensor = torch.tensor([w_local[id] for id in train_indices])
     w_local_tensor = torch.tensor(w_local) # TODO no point storing this in a tensor instance
     ground_truth_tensor = torch.tensor(ground_truth)
     #xdf = pd.DataFrame(s[:, 3:6], columns=['01','02','03'])
