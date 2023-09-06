@@ -430,6 +430,7 @@ def experiment_bezier(
     for j in range(num_experiments):#実験の回数
         list_ave = []
         list_time = []
+
         for d in degrees:
         
             time_start = time.perf_counter()
@@ -446,13 +447,13 @@ def experiment_bezier(
             # df = pd.DataFrame(bts[:, 0:3],columns=['sf1','sf2','sf3'])
             # fig = px.scatter_3d(df, x='sf1', y='sf2', z='sf3')
             # fig.show()
-            errors = []
-            for i in test_indices:
-                errors.append(np.square(
+            errors = [
+                np.square(
                     pareto_set_x_front_ground_truth[i].detach().numpy()
                     # [w1, w2, w3] for index i
                     - bezier_simplex(w_local_tensor.detach().numpy()[i].reshape(1,3)).detach().numpy())
-                )
+                for i in test_indices
+            ]
             test_error = np.mean(errors) # 1つのパレートフロント全体/一部から1つのベジエ単体全体へのテスト誤差
 
             list_ave.append(test_error)
