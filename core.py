@@ -425,8 +425,8 @@ def experiment_bezier(
 
     # Use torch_bsf to learn the solution paths (i.e. solution map)
 
-    Llist_ave = [] #テスト誤差が入るリスト
-    Llist_time = [] #計算時間が入るリスト
+    approximation_errors = [] #テスト誤差が入るリスト
+    training_timings = [] #計算時間が入るリスト
     for j in range(num_experiments):#実験の回数
         approximation_errors_d = []
         training_timings_d = []
@@ -459,11 +459,11 @@ def experiment_bezier(
                 np.mean(errors)) # 1つのパレートフロント全体/一部から1つのベジエ単体全体へのテスト誤差
             training_timings_d.append(time_end - time_start)
 
-        Llist_ave.append(approximation_errors_d)
-        Llist_time.append(training_timings_d)
+        approximation_errors.append(approximation_errors_d)
+        training_timings.append(training_timings_d)
 
-    return (pd.DataFrame(Llist_ave),
-            pd.DataFrame(Llist_time))
+    return (pd.DataFrame(approximation_errors),
+            pd.DataFrame(training_timings))
 
 
 class Test_bezier (unittest.TestCase):
