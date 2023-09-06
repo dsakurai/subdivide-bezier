@@ -268,7 +268,7 @@ def w_2_alpha_l1(w):
     # regcoef_df = pd.DataFrame(ls)
     return ls
 
-def calc_EN(x, y, w):
+def fit_elastic_nets(x, y, w):
     """
     エラスティックネットの計算をする。
     :param x: エラスティックネットの説明変数
@@ -388,16 +388,12 @@ def experiment_bezier(
     np.random.seed(0)
 
     w = make_w(resolution=40, triangle=triangle) #参照三角形を生成する関数
-    #print(w)
-    #print(coef)
-    pareto_set = calc_EN(datax, datay, w)  #パレートセットを計算
+    
+    pareto_set = fit_elastic_nets(datax, datay, w)  #パレートセットを計算
     assert(len(w) == len(pareto_set))
 
-    class temp: # Dirty trick: convert the list to pandas dataframe
-        df_pareto_set = pd.DataFrame(pareto_set)
-
-        # fig = px.scatter_3d(df_pareto_set, x=0, y=1, z=2, title="The input solution map (path) of elastic net")
-        # fig.show()
+    # fig = px.scatter_3d(pd.DataFrame(pareto_set), x=0, y=1, z=2, title="The input solution map (path) of elastic net")
+    # fig.show()
 
     N_DATA = len(w)
     N_TEST = N_DATA // 10
