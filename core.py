@@ -334,7 +334,7 @@ def f3_perturbed(thetas):
     X = np.array(thetas)
     return (np.linalg.norm(X, ord = 2)**2)/2 + eps * f3(thetas)
 
-def calc_PF(x, y, pareto_set):
+def compute_pareto_front(x, y, pareto_set):
     """
     パレートフロントを計算する。
     :param x: エラスティックネットの説明変数
@@ -400,7 +400,7 @@ def experiment_bezier(
         # fig = px.scatter_3d(df_pareto_set, x=0, y=1, z=2, title="The input solution map (path) of elastic net")
         # fig.show()
 
-    f = calc_PF(datax, datay, pareto_set) #パレートフロントを計算
+    f = compute_pareto_front(datax, datay, pareto_set) #パレートフロントを計算
 
 
     N_DATA = len(w)
