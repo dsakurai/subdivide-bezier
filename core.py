@@ -320,29 +320,30 @@ def f1_perturbed(data_x, data_y, thetas):
     return g + eps * f3(thetas)
 
 # TODO what's this function?
-def f2_perturbed(thetas):
+def f2_perturbed(thetas, eps):
     #calc |0|
     X = np.array(thetas)
     return np.linalg.norm(X, ord = 1) + eps * f3(thetas)
 
 # TODO what's this function?
-def f3_perturbed(thetas):
+def f3_perturbed(thetas, eps):
     #calc 1/2||0||^2
     X = np.array(thetas)
     return (np.linalg.norm(X, ord = 2)**2)/2 + eps * f3(thetas)
 
-def f_perturbed(x, y, thetas):
+def f_perturbed(x, y, thetas, eps = 1e-4):
     """
     パレートフロントを計算する。
     :param x: エラスティックネットの説明変数
     :param y: エラスティックネットの目的変数
+    :param eps: This epsilon perturbs f1, f2, f3 as specified by Mizota et al. It has to be rather large as this is used to perturb f. Otherwise, there's no point perturbing f
     :param pareto_set: パレート集合の点 (theta_0, theta_1, ...)
     :return: パレートフロント
     """
     return [
-        f1_perturbed(x, y, thetas).tolist(),
-        f2_perturbed(thetas).tolist(),
-        f3_perturbed(thetas).tolist()
+        f1_perturbed(x, y, thetas, eps=eps).tolist(),
+        f2_perturbed(thetas, eps=eps).tolist(),
+        f3_perturbed(thetas, eps=eps).tolist()
     ]
 
 def fit_bezier_simplex(
