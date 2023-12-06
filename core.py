@@ -5,7 +5,7 @@ from sklearn.linear_model import LinearRegression, Ridge, ElasticNet
 import time
 import torch
 import torch_bsf
-import pytest
+import unittest
 import pytest_check
 import plotly.express as px
 
@@ -450,71 +450,87 @@ def experiment_bezier(
             pd.DataFrame(training_timings,     columns=degrees))
 
 
-def test_bezier():
+class MyTest(unittest.TestCase):
 
+    def assertAlmostEqual(self, first, second, relative=0.1):
+    
+        allow = first * relative
+        
+        super().assertAlmostEqual(
+            first=first,
+            second=second,
+            delta=allow
+        )
+    def test_bezier(self):
 
-   # Test without subdivision
-   approximation_errors, training_timings = experiment_bezier(triangle=[], num_experiments=5, degrees=[0, 2],
-                                     # datax=x, datay=y  # Load fish. (Comment out this line to do this fitting with the default toy data)
-                                     )
+        # Test without subdivision
+        approximation_errors, training_timings = experiment_bezier(triangle=[], num_experiments=5, degrees=[0, 2],
+                                          # datax=x, datay=y  # Load fish. (Comment out this line to do this fitting with the default toy data)
+                                          )
+        
+        degree_0_error = np.median(approximation_errors[0])
+        degree_2_error = np.median(approximation_errors[2])
+        
+        self.assertAlmostEqual(
+            degree_2_error/degree_0_error, 0.09, relative=0.5
+        )
+        
+        degree_0_time = np.median(training_timings[0])
+        degree_2_time = np.median(training_timings[2])
 
-   degree_0_error = np.median(approximation_errors[0])
-   degree_2_error = np.median(approximation_errors[2])
+        with self.subTest():
+            self.assertAlmostEqual(
+                degree_2_time/degree_0_time,
+                2.8,
+                relative=0.5
+            )
 
-   assert degree_2_error/degree_0_error == pytest.approx(
-       expected=0.09, # using the 32 core GPU on macOS Apple Sillicon M1 Max, but this is dependent on hardware
-       rel=0.5
-   )
+        approximation_errors, training_timings = experiment_bezier(triangle=[Subdivision.triangle_center], num_experiments=5, degrees=[0, 2]
+                                          # datax=x, datay=y  # Load fish. (Comment this line to do this fitting with the default toy data)
+                                          )
+        
+        degree_0_error_triangle_center = np.median(approximation_errors[0])
+        degree_2_error_triangle_center = np.median(approximation_errors[2])
 
-   degree_0_time = np.median(training_timings[0])
-   degree_2_time = np.median(training_timings[2])
+        self.assertAlmostEqual(
+            degree_2_error_triangle_center/degree_0_error_triangle_center,
+            0.04,
+            relative=0.5
+        )
+        
+        degree_0_time_triangle_center = np.median(training_timings[0])
+        degree_2_time_triangle_center = np.median(training_timings[2])
 
-   with pytest_check.check:
-       assert degree_2_time/degree_0_time == pytest.approx(
-           expected=2.8, # using the 32 core GPU on macOS Apple Sillicon M1 Max, but this is dependent on hardware
-           rel=0.5
-       )
+        with self.subTest():
+            self.assertAlmostEqual(
+                degree_2_time_triangle_center/degree_0_time_triangle_center,
+                3.1,
+                relative=0.5
+            )
 
-   approximation_errors, training_timings = experiment_bezier(triangle=[Subdivision.triangle_center], num_experiments=5, degrees=[0, 2]
-                                     # datax=x, datay=y  # Load fish. (Comment this line to do this fitting with the default toy data)
-                                     )
+        with self.subTest():
+            self.assertAlmostEqual(
+                degree_0_error_triangle_center/degree_0_error,
+                0.4,
+                relative=0.5
+            )
 
-   degree_0_error_triangle_center = np.median(approximation_errors[0])
-   degree_2_error_triangle_center = np.median(approximation_errors[2])
+        with self.subTest():
+            self.assertAlmostEqual(
+                degree_0_time_triangle_center/degree_0_time,
+                1.0,
+                relative=0.5
+            )
 
-   assert degree_2_error_triangle_center/degree_0_error_triangle_center == pytest.approx(
-       expected=0.04, # using the 32 core GPU on macOS Apple Sillicon M1 Max, but this is dependent on hardware
-       rel=0.5
-   )
+        self.assertAlmostEqual(
+            degree_2_error_triangle_center/degree_2_error,
+            0.16,
+            relative=0.5
+        )
 
-   degree_0_time_triangle_center = np.median(training_timings[0])
-   degree_2_time_triangle_center = np.median(training_timings[2])
-
-   with pytest_check.check:
-       assert degree_2_time_triangle_center/degree_0_time_triangle_center == pytest.approx(
-           expected=3.1, # using the 32 core GPU on macOS Apple Sillicon M1 Max, but this is dependent on hardware
-           rel=0.5
-       )
-
-   assert degree_0_error_triangle_center/degree_0_error == pytest.approx(
-       expected=0.4, # using the 32 core GPU on macOS Apple Sillicon M1 Max, but this is dependent on hardware
-       rel=0.5
-   )
-
-   with pytest_check.check:
-       assert degree_0_time_triangle_center/degree_0_time == pytest.approx(
-           expected=1.0, # using the 32 core GPU on macOS Apple Sillicon M1 Max, but this is dependent on hardware
-           rel=0.5
-       )
-
-   assert degree_2_error_triangle_center/degree_2_error == pytest.approx(
-       expected=0.16, # using the 32 core GPU on macOS Apple Sillicon M1 Max, but this is dependent on hardware
-       # was 0.2 with pytorch 0.0.2 It's got less powerful.
-       rel=0.5
-   )
-
-   with pytest_check.check:
-       assert degree_2_time_triangle_center/degree_2_time == pytest.approx(
-           expected=0.95, # using the 32 core GPU on macOS Apple Sillicon M1 Max, but this is dependent on hardware
-           rel=0.5
-       )
+        with self.subTest():
+            self.assertAlmostEqual(
+                degree_2_time_triangle_center/degree_2_time,
+                0.95,
+                relative=0.5
+            )
