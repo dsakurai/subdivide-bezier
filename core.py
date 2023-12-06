@@ -343,22 +343,6 @@ def f_perturbed(x, y, thetas, eps = 1e-4):
         f2_perturbed(thetas, eps=eps).tolist(),
         f3_perturbed(thetas, eps=eps).tolist()
     ]
-
-def fit_bezier_simplex(
-        df_pareto: pd.DataFrame,
-        triangle: [int],
-        params ,
-        values ,
-        degree: [int],
-    ):
-    """
-    :param df_pareto: Pareto set, Pareto front, or both.
-    :param triangle: The triangle in the subdivision.
-    :param degree: Degree of the bezier simplex fitting
-    :return: 
-    """
-    pass
-
 def experiment_bezier(
         triangle: [int] = [],
         num_experiments: [int] = 5,
