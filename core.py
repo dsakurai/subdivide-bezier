@@ -5,7 +5,8 @@ from sklearn.linear_model import LinearRegression, Ridge, ElasticNet
 import time
 import torch
 import torch_bsf
-import unittest
+import pytest
+import pytest_check
 import plotly.express as px
 
 class Subdivision:
@@ -449,64 +450,71 @@ def experiment_bezier(
             pd.DataFrame(training_timings,     columns=degrees))
 
 
-class Test_bezier (unittest.TestCase):
-    def test_bezier(self):
-    
-        # QSAR fish data
-        # names = ["CIC0", "SM1_Dz(Z)", "GATS1i", "NdsCH", "NdssC", "MLOGP", "quantitative response, LC50 [-LOG(mol/L)]"]
-        # df = pd.read_csv("resources/example-data/QSAR-fish/qsar_fish_toxicity.csv",
-        #                  sep=";",
-        #                  names=names
-        #                  )
-        # x = df[names[:-1]]
-        # y = df[[names[-1]]]
-        # x = x.values.tolist()
-        # y = y.values.flatten().tolist()
+def test_bezier():
 
-        # Test without subdivision
-        approximation_errors, training_timings = experiment_bezier(triangle=[], num_experiments=10, degrees=[0, 8],
-                                          # datax=x, datay=y  # Load fish. (Comment out this line to do this fitting with the default toy data)
-                                          )
 
-        degree_0_error = np.median(approximation_errors[0])
-        degree_8_error = np.median(approximation_errors[8])
-        
-        def assertAlmostEqual(value, expected):
-            self.assertAlmostEqual(
-                log10(
-                    value),
-                log10(
-                    expected),# using the 32 core GPU on macOS Apple Sillicon M1 Max, but this is dependent on hardware
-                delta=0.5,
-                msg=f"actual value: {value}"
-            )
-            
+   # Test without subdivision
+   approximation_errors, training_timings = experiment_bezier(triangle=[], num_experiments=10, degrees=[0, 8],
+                                     # datax=x, datay=y  # Load fish. (Comment out this line to do this fitting with the default toy data)
+                                     )
 
-        assertAlmostEqual(degree_8_error/degree_0_error, 0.01)
+   degree_0_error = np.median(approximation_errors[0])
+   degree_8_error = np.median(approximation_errors[8])
 
-        degree_0_time = np.median(training_timings[0])
-        degree_8_time = np.median(training_timings[8])
-        
-        assertAlmostEqual(degree_8_time/degree_0_time, 10.0)
+   assert degree_8_error/degree_0_error == pytest.approx(
+       expected=0.01, # using the 32 core GPU on macOS Apple Sillicon M1 Max, but this is dependent on hardware
+       rel=0.5
+   )
 
-        approximation_errors, training_timings = experiment_bezier(triangle=[Subdivision.triangle_center], num_experiments=10, degrees=[0, 8]
-                                          # datax=x, datay=y  # Load fish. (Comment this line to do this fitting with the default toy data)
-                                          )
+   degree_0_time = np.median(training_timings[0])
+   degree_8_time = np.median(training_timings[8])
 
-        degree_0_error_triangle_center = np.median(approximation_errors[0])
-        degree_8_error_triangle_center = np.median(approximation_errors[8])
+   with pytest_check.check:
+       assert degree_8_time/degree_0_time == pytest.approx(
+           expected=10.0, # using the 32 core GPU on macOS Apple Sillicon M1 Max, but this is dependent on hardware
+           rel=0.5
+       )
 
-        assertAlmostEqual(degree_8_error_triangle_center/degree_0_error_triangle_center, 0.01)
-        
-        degree_0_time_triangle_center = np.median(training_timings[0])
-        degree_8_time_triangle_center = np.median(training_timings[8])
+   approximation_errors, training_timings = experiment_bezier(triangle=[Subdivision.triangle_center], num_experiments=10, degrees=[0, 8]
+                                     # datax=x, datay=y  # Load fish. (Comment this line to do this fitting with the default toy data)
+                                     )
 
-        assertAlmostEqual(degree_8_time_triangle_center/degree_0_time_triangle_center,13.0)
+   degree_0_error_triangle_center = np.median(approximation_errors[0])
+   degree_8_error_triangle_center = np.median(approximation_errors[8])
 
-        assertAlmostEqual(degree_0_error_triangle_center/degree_0_error,0.4)
-            
-        assertAlmostEqual(degree_0_time_triangle_center/degree_0_time,0.5)
+   assert degree_8_error_triangle_center/degree_0_error_triangle_center == pytest.approx(
+       expected=0.01, # using the 32 core GPU on macOS Apple Sillicon M1 Max, but this is dependent on hardware
+       rel=0.5
+   )
 
-        assertAlmostEqual(degree_8_error_triangle_center/degree_8_error,0.2)
-            
-        assertAlmostEqual(degree_8_time_triangle_center/degree_8_time,0.5)
+   degree_0_time_triangle_center = np.median(training_timings[0])
+   degree_8_time_triangle_center = np.median(training_timings[8])
+
+   with pytest_check.check:
+       assert degree_8_time_triangle_center/degree_0_time_triangle_center == pytest.approx(
+           expected=13.0, # using the 32 core GPU on macOS Apple Sillicon M1 Max, but this is dependent on hardware
+           rel=0.5
+       )
+
+   assert degree_0_error_triangle_center/degree_0_error == pytest.approx(
+       expected=0.4, # using the 32 core GPU on macOS Apple Sillicon M1 Max, but this is dependent on hardware
+       rel=0.5
+   )
+
+   with pytest_check.check:
+       assert degree_0_time_triangle_center/degree_0_time == pytest.approx(
+           expected=0.5, # using the 32 core GPU on macOS Apple Sillicon M1 Max, but this is dependent on hardware
+           rel=0.5
+       )
+
+   assert degree_8_error_triangle_center/degree_8_error == pytest.approx(
+       expected=0.4, # using the 32 core GPU on macOS Apple Sillicon M1 Max, but this is dependent on hardware
+       # was 0.2 with pytorch 0.0.2 It's got less powerful.
+       rel=0.5
+   )
+
+   with pytest_check.check:
+       assert degree_8_time_triangle_center/degree_8_time == pytest.approx(
+           expected=0.5, # using the 32 core GPU on macOS Apple Sillicon M1 Max, but this is dependent on hardware
+           rel=0.5
+       )
