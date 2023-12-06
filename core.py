@@ -14,8 +14,6 @@ class Subdivision:
     triangle_2      = 2
     triangle_center = 3
 
-eps = 1e-4 # This has to be rather large as this is used to perturb f. Otherwise, there's no point perturbing f.
-
 # Number of flips in the triangle
 def flipped(upper_triangle):
     """
