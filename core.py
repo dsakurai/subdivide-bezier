@@ -308,7 +308,7 @@ def f3(coef):
     return np.linalg.norm(X, ord = 2)**2
 
 # TODO what's this function?
-def f1_perturbed(data_x, data_y, thetas):
+def f1_perturbed(data_x, data_y, thetas, eps):
     #calc 1/2M||X0 - y||^2
     #np.matmul(data_x, coef.T) = X0
     #(np.matmul(data_x, coef.T) - data_y) = X0 - y
