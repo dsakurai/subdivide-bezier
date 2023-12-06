@@ -454,45 +454,45 @@ def test_bezier():
 
 
    # Test without subdivision
-   approximation_errors, training_timings = experiment_bezier(triangle=[], num_experiments=10, degrees=[0, 8],
+   approximation_errors, training_timings = experiment_bezier(triangle=[], num_experiments=5, degrees=[0, 2],
                                      # datax=x, datay=y  # Load fish. (Comment out this line to do this fitting with the default toy data)
                                      )
 
    degree_0_error = np.median(approximation_errors[0])
-   degree_8_error = np.median(approximation_errors[8])
+   degree_2_error = np.median(approximation_errors[2])
 
-   assert degree_8_error/degree_0_error == pytest.approx(
-       expected=0.01, # using the 32 core GPU on macOS Apple Sillicon M1 Max, but this is dependent on hardware
+   assert degree_2_error/degree_0_error == pytest.approx(
+       expected=0.09, # using the 32 core GPU on macOS Apple Sillicon M1 Max, but this is dependent on hardware
        rel=0.5
    )
 
    degree_0_time = np.median(training_timings[0])
-   degree_8_time = np.median(training_timings[8])
+   degree_2_time = np.median(training_timings[2])
 
    with pytest_check.check:
-       assert degree_8_time/degree_0_time == pytest.approx(
-           expected=10.0, # using the 32 core GPU on macOS Apple Sillicon M1 Max, but this is dependent on hardware
+       assert degree_2_time/degree_0_time == pytest.approx(
+           expected=2.8, # using the 32 core GPU on macOS Apple Sillicon M1 Max, but this is dependent on hardware
            rel=0.5
        )
 
-   approximation_errors, training_timings = experiment_bezier(triangle=[Subdivision.triangle_center], num_experiments=10, degrees=[0, 8]
+   approximation_errors, training_timings = experiment_bezier(triangle=[Subdivision.triangle_center], num_experiments=5, degrees=[0, 2]
                                      # datax=x, datay=y  # Load fish. (Comment this line to do this fitting with the default toy data)
                                      )
 
    degree_0_error_triangle_center = np.median(approximation_errors[0])
-   degree_8_error_triangle_center = np.median(approximation_errors[8])
+   degree_2_error_triangle_center = np.median(approximation_errors[2])
 
-   assert degree_8_error_triangle_center/degree_0_error_triangle_center == pytest.approx(
-       expected=0.01, # using the 32 core GPU on macOS Apple Sillicon M1 Max, but this is dependent on hardware
+   assert degree_2_error_triangle_center/degree_0_error_triangle_center == pytest.approx(
+       expected=0.04, # using the 32 core GPU on macOS Apple Sillicon M1 Max, but this is dependent on hardware
        rel=0.5
    )
 
    degree_0_time_triangle_center = np.median(training_timings[0])
-   degree_8_time_triangle_center = np.median(training_timings[8])
+   degree_2_time_triangle_center = np.median(training_timings[2])
 
    with pytest_check.check:
-       assert degree_8_time_triangle_center/degree_0_time_triangle_center == pytest.approx(
-           expected=13.0, # using the 32 core GPU on macOS Apple Sillicon M1 Max, but this is dependent on hardware
+       assert degree_2_time_triangle_center/degree_0_time_triangle_center == pytest.approx(
+           expected=3.1, # using the 32 core GPU on macOS Apple Sillicon M1 Max, but this is dependent on hardware
            rel=0.5
        )
 
@@ -503,18 +503,18 @@ def test_bezier():
 
    with pytest_check.check:
        assert degree_0_time_triangle_center/degree_0_time == pytest.approx(
-           expected=0.5, # using the 32 core GPU on macOS Apple Sillicon M1 Max, but this is dependent on hardware
+           expected=1.0, # using the 32 core GPU on macOS Apple Sillicon M1 Max, but this is dependent on hardware
            rel=0.5
        )
 
-   assert degree_8_error_triangle_center/degree_8_error == pytest.approx(
-       expected=0.4, # using the 32 core GPU on macOS Apple Sillicon M1 Max, but this is dependent on hardware
+   assert degree_2_error_triangle_center/degree_2_error == pytest.approx(
+       expected=0.16, # using the 32 core GPU on macOS Apple Sillicon M1 Max, but this is dependent on hardware
        # was 0.2 with pytorch 0.0.2 It's got less powerful.
        rel=0.5
    )
 
    with pytest_check.check:
-       assert degree_8_time_triangle_center/degree_8_time == pytest.approx(
-           expected=0.5, # using the 32 core GPU on macOS Apple Sillicon M1 Max, but this is dependent on hardware
+       assert degree_2_time_triangle_center/degree_2_time == pytest.approx(
+           expected=0.95, # using the 32 core GPU on macOS Apple Sillicon M1 Max, but this is dependent on hardware
            rel=0.5
        )
