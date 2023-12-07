@@ -175,7 +175,7 @@ def trans(triangle, bnd, w):
             tlist.append(tlist2)
     return tlist
 
-def localize_w(
+def localize_ws(
         w,
         triangle: [int] = [] # default: largest triangle
 ):
@@ -389,7 +389,7 @@ def experiment_bezier(
     test_indices, train_indices = split_test_train(num_points=len(w_global))
 
     # Local coordinates for this triangle
-    w_local = localize_w(w_global, triangle=triangle)
+    w_local = localize_ws(w_global, triangle=triangle)
     w_local_train  = torch.tensor([w_local[id] for id in train_indices])
 
     # Pareto set x Pareto front
