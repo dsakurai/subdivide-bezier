@@ -392,23 +392,6 @@ def experiment_bezier(
     The default data are from Mizota et al. (arXiv:2106.12704v1). However, in their computation they normalize the data beforehand.
     As we are supplying the original datax and datay, the fitting result looks different. 
     """
-    
-    np.random.seed(seed)
-
-    # Hyperparameters w in the triangle
-    w_global = make_w(resolution=40, triangle=triangle) #参照三角形を生成する関数
-    test_indices, train_indices = split_test_train(num_points=len(w_global))
-
-    # Local coordinates for this triangle
-    w_local_train = torch.tensor([localize_w(w_global[id], triangle=triangle) for id in train_indices])
-
-    # Ground truth: the manifold to be approximated by the Bezier simplex.
-    elastic_net_thetas = fit_elastic_nets(datax, datay, w_global); assert(len(w_global) == len(elastic_net_thetas))
-    #
-    # Pick some elastic net results for training
-    elastic_net_solutions_train = torch.tensor([
-        thetas_and_fs(elastic_net_thetas[i], datax, datay) for i in train_indices
-    ])
 
     # Fit the Bezier simplex to the solution paths (i.e. solution map)
     approximation_errors = [] #テスト誤差が入るリスト
@@ -418,6 +401,23 @@ def experiment_bezier(
         training_timings_j = []
 
         for d in degrees:
+        
+            np.random.seed(seed)
+
+            # Hyperparameters w in the triangle
+            w_global = make_w(resolution=40, triangle=triangle) #参照三角形を生成する関数
+            test_indices, train_indices = split_test_train(num_points=len(w_global))
+            
+            # Ground truth: the manifold to be approximated by the Bezier simplex.
+            elastic_net_thetas = fit_elastic_nets(datax, datay, w_global); assert(len(w_global) == len(elastic_net_thetas))
+
+            # Local coordinates for this triangle
+            w_local_train = torch.tensor([localize_w(w_global[id], triangle=triangle) for id in train_indices])
+            
+            # Pick elastic net results for training
+            elastic_net_solutions_train = torch.tensor([
+                thetas_and_fs(elastic_net_thetas[i], datax, datay) for i in train_indices
+            ])
         
             time_start = time.perf_counter()
             #
