@@ -369,6 +369,22 @@ def thetas_and_fs(elastic_net_thetas, data_x, data_y):
     """Ccoordinate positions (i.e. list of Pareto set x Pareto front in elastic net)"""
     return elastic_net_thetas + f_perturbed(data_x, data_y, elastic_net_thetas)
 
+def fit_bezier_simplex(ws_global, triangle, degree, elastic_net_solutions):
+
+    # Local coordinates for this triangle
+    w_local_train         = torch.tensor(localize_ws(ws_global, triangle=triangle))
+    elastic_net_solutions = torch.tensor(elastic_net_solutions)
+    
+    # w -> fの対応関係を訓練したベジエ単体：単体から3次元空間への関数
+    time_start = time.perf_counter()
+    bezier_simplex = torch_bsf.fit(
+        params=w_local_train,
+        values=elastic_net_solutions,
+        degree=degree)
+    time_end = time.perf_counter()
+    
+    return bezier_simplex, (time_end - time_start)
+
 def experiment_bezier(
         triangle: [int] = [],
         num_experiments: [int] = 5,
@@ -411,22 +427,13 @@ def experiment_bezier(
             # Ground truth: the manifold to be approximated by the Bezier simplex.
             elastic_net_thetas = fit_elastic_nets(data_x, data_y, w_global); assert(len(w_global) == len(elastic_net_thetas))
 
-            # Local coordinates for this triangle
-            w_local_train = torch.tensor([localize_w(w_global[id], triangle=triangle) for id in train_indices])
-            
-            # Pick elastic net results for training
-            elastic_net_solutions_train = torch.tensor([
-                thetas_and_fs(elastic_net_thetas[i], data_x, data_y) for i in train_indices
-            ])
-        
-            time_start = time.perf_counter()
-            #
-            bezier_simplex = torch_bsf.fit(
-                params=w_local_train,
-                values=elastic_net_solutions_train,
-                degree=d) # w -> fの対応関係を訓練したベジエ単体：単体から3次元空間への関数
-            #
-            time_end = time.perf_counter()
+            bezier_simplex, duration = fit_bezier_simplex(
+                ws_global=[w_global[id] for id in train_indices],
+                triangle=triangle,
+                # Pick elastic net results for training
+                elastic_net_solutions=[thetas_and_fs(elastic_net_thetas[i], data_x, data_y) for i in train_indices],
+                degree=d
+                )
             
             # _, bts = bezier_simplex.meshgrid(num=100)
             # bts = bts.detach() # TODO can we remove this line?
@@ -445,7 +452,7 @@ def experiment_bezier(
 
             approximation_errors_j.append(
                 np.mean(errors)) # 1つのパレートフロント全体/一部から1つのベジエ単体全体へのテスト誤差
-            training_timings_j.append(time_end - time_start)
+            training_timings_j.append(duration)
 
         approximation_errors.append(approximation_errors_j)
         training_timings.append(training_timings_j)
