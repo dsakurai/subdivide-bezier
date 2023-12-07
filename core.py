@@ -179,12 +179,6 @@ def localize_ws(
         w,
         triangle: [int] = [] # default: largest triangle
 ):
-    """
-    参照三角形をベジエ単体近似に使えるようにパラメータを変換する。変換する三角形の三辺の境界を見つけてtrans()を呼ぶ
-    :param w: (w1, w2, w3) in the original triangle
-    :param triangle: a triangle in the subdivision
-    :return: w in coordinates localized within `triangle`
-    """
     border = [0.0, 0.0, 0.0]
     if len(triangle) == 0:
         tlist = trans(triangle, border, w)
@@ -236,6 +230,23 @@ def localize_ws(
     tlist = trans(triangle, border, w)
     # df = pd.DataFrame(tlist)
     return tlist
+
+def localize_w(
+        w,
+        triangle: [int] = [] # default: largest triangle
+):
+    """
+    参照三角形をベジエ単体近似に使えるようにパラメータを変換する。変換する三角形の三辺の境界を見つけてtrans()を呼ぶ
+    :param w: (w1, w2, w3) in the original triangle
+    :param triangle: a triangle in the subdivision
+    :return: w in coordinates localized within `triangle`
+    """
+    # The original function expects a set of ws.
+    # We get a single w and wrap it in a new list [w] so that we can use the original function.
+    # As we get the output as a list, we un-wrap the element that corresponds to the input w.
+    # (In fact, the output list has length 1.)
+    # TODO It's cleaner to re-write the original function and use that one instead.
+    return localize_ws([w], triangle=triangle)[0]
 
 def calc_alpha(w0, eps):
     w0 = max(w0,0.01) # TODO This 0.01 avoids explosion of alpha, but is 0.01 a good choice?
@@ -389,8 +400,7 @@ def experiment_bezier(
     test_indices, train_indices = split_test_train(num_points=len(w_global))
 
     # Local coordinates for this triangle
-    w_local = localize_ws(w_global, triangle=triangle)
-    w_local_train  = torch.tensor([w_local[id] for id in train_indices])
+    w_local_train = torch.tensor([localize_w(w_global[id], triangle=triangle) for id in train_indices])
 
     # Pareto set x Pareto front
     pareto_set = fit_elastic_nets(datax, datay, w_global); assert(len(w_global) == len(pareto_set))
@@ -427,7 +437,9 @@ def experiment_bezier(
                 np.square(
                     pareto_set_x_front(datax, datay, pareto_set[i])
                     # [w1, w2, w3] for index i
-                    - bezier_simplex([w_local[i]]).detach().numpy())
+                    - bezier_simplex([
+                        localize_w(w_global[i], triangle=triangle)
+                    ]).detach().numpy())
                 for i in test_indices
             ]
 
