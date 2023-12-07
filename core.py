@@ -391,7 +391,6 @@ def experiment_bezier(
     # Local coordinates for this triangle
     w_local = localize_w(w_global, triangle=triangle)
     w_local_train  = torch.tensor([w_local[id] for id in train_indices])
-    w_local_tensor = torch.tensor( w_local    ) # TODO no point storing this in a tensor instance
 
     # Pareto set x Pareto front
     pareto_set = fit_elastic_nets(datax, datay, w_global); assert(len(w_global) == len(pareto_set))
@@ -428,7 +427,7 @@ def experiment_bezier(
                 np.square(
                     pareto_set_x_front(datax, datay, pareto_set[i])
                     # [w1, w2, w3] for index i
-                    - bezier_simplex(w_local_tensor.detach().numpy()[i].reshape(1,3)).detach().numpy())
+                    - bezier_simplex([w_local[i]]).detach().numpy())
                 for i in test_indices
             ]
 
