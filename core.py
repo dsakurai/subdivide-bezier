@@ -402,7 +402,7 @@ def experiment_bezier(
     # Local coordinates for this triangle
     w_local_train = torch.tensor([localize_w(w_global[id], triangle=triangle) for id in train_indices])
 
-    # Pareto set x Pareto front
+    # Ground truth: the manifold to be approximated by the Bezier simplex.
     pareto_set = fit_elastic_nets(datax, datay, w_global); assert(len(w_global) == len(pareto_set))
     #
     # Training dataset (subset of the ground truth)
