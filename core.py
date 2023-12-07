@@ -365,9 +365,9 @@ def split_test_train(num_points):
 
     return test_indices, train_indices
 
-def pareto_set_x_front(pareto_set, data_x, data_y):
+def thetas_and_fs(elastic_net_thetas, data_x, data_y):
     """Ccoordinate positions (i.e. list of Pareto set x Pareto front in elastic net)"""
-    return pareto_set + f_perturbed(data_x, data_y, pareto_set)
+    return elastic_net_thetas + f_perturbed(data_x, data_y, elastic_net_thetas)
 
 def experiment_bezier(
         triangle: [int] = [],
@@ -403,11 +403,11 @@ def experiment_bezier(
     w_local_train = torch.tensor([localize_w(w_global[id], triangle=triangle) for id in train_indices])
 
     # Ground truth: the manifold to be approximated by the Bezier simplex.
-    pareto_set = fit_elastic_nets(datax, datay, w_global); assert(len(w_global) == len(pareto_set))
+    elastic_net_thetas = fit_elastic_nets(datax, datay, w_global); assert(len(w_global) == len(elastic_net_thetas))
     #
-    # Training dataset (subset of the ground truth)
-    pareto_set_x_front_train = torch.tensor([
-        pareto_set_x_front(pareto_set[i], datax, datay) for i in train_indices
+    # Pick some elastic net results for training
+    elastic_net_solutions_train = torch.tensor([
+        thetas_and_fs(elastic_net_thetas[i], datax, datay) for i in train_indices
     ])
 
     # Fit the Bezier simplex to the solution paths (i.e. solution map)
@@ -423,7 +423,7 @@ def experiment_bezier(
             #
             bezier_simplex = torch_bsf.fit(
                 params=w_local_train,
-                values=pareto_set_x_front_train,
+                values=elastic_net_solutions_train,
                 degree=d) # w -> fの対応関係を訓練したベジエ単体：単体から3次元空間への関数
             #
             time_end = time.perf_counter()
@@ -435,7 +435,7 @@ def experiment_bezier(
             # fig.show()
             errors = [
                 np.square(
-                    pareto_set_x_front(pareto_set[i], datax, datay)
+                    thetas_and_fs(elastic_net_thetas[i], datax, datay)
                     # [w1, w2, w3] for index i
                     - bezier_simplex([
                         localize_w(w_global[i], triangle=triangle)
