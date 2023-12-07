@@ -371,9 +371,6 @@ def experiment_bezier(
 
     w_global = make_w(resolution=40, triangle=triangle) #参照三角形を生成する関数
     
-    pareto_set = fit_elastic_nets(datax, datay, w_global)  #パレートセットを計算
-    assert(len(w_global) == len(pareto_set))
-
     # fig = px.scatter_3d(pd.DataFrame(pareto_set), x=0, y=1, z=2, title="The input solution map (path) of elastic net")
     # fig.show()
 
@@ -386,6 +383,8 @@ def experiment_bezier(
     train_indices = [i for i in data_indices if i not in test_indices]  # indices of training data
 
     # Pareto set x Pareto front
+    pareto_set = fit_elastic_nets(datax, datay, w_global)  #パレートセットを計算
+    assert(len(w_global) == len(pareto_set))
     #
     # Ground truth coordinate positions (i.e. list of Pareto set x Pareto front in elastic net)
     pareto_set_x_front_ground_truth = torch.tensor([
