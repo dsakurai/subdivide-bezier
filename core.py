@@ -354,6 +354,9 @@ def split_test_train(num_points):
 
     return test_indices, train_indices
 
+def pareto_set_x_front(data_x, data_y, thetas):
+    """Ccoordinate positions (i.e. list of Pareto set x Pareto front in elastic net)"""
+    return thetas + f_perturbed(data_x, data_y, thetas)
 
 def experiment_bezier(
         triangle: [int] = [],
@@ -391,15 +394,9 @@ def experiment_bezier(
     # Pareto set x Pareto front
     pareto_set = fit_elastic_nets(datax, datay, w_global); assert(len(w_global) == len(pareto_set))
     #
-    # Ground truth coordinate positions (i.e. list of Pareto set x Pareto front in elastic net)
-    pareto_set_x_front_ground_truth = [
-        # Join (theta_0, theta_1,  ...) and (f_0, f_2, f_3)
-        thetas + f_perturbed(datax, datay, thetas) for thetas in pareto_set
-    ]
-    #
     # Training dataset (subset of the ground truth)
     pareto_set_x_front_train = torch.tensor([
-        pareto_set_x_front_ground_truth[i] for i in train_indices
+        pareto_set_x_front(datax, datay, pareto_set[i]) for i in train_indices
     ])
     
     w_local = localize_w(w_global, triangle=triangle)
@@ -437,7 +434,7 @@ def experiment_bezier(
             # fig.show()
             errors = [
                 np.square(
-                    pareto_set_x_front_ground_truth[i]
+                    pareto_set_x_front(datax, datay, pareto_set[i])
                     # [w1, w2, w3] for index i
                     - bezier_simplex(w_local_tensor.detach().numpy()[i].reshape(1,3)).detach().numpy())
                 for i in test_indices
