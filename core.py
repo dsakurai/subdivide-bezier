@@ -369,15 +369,15 @@ def experiment_bezier(
     
     np.random.seed(0)
 
-    w = make_w(resolution=40, triangle=triangle) #参照三角形を生成する関数
+    w_global = make_w(resolution=40, triangle=triangle) #参照三角形を生成する関数
     
-    pareto_set = fit_elastic_nets(datax, datay, w)  #パレートセットを計算
-    assert(len(w) == len(pareto_set))
+    pareto_set = fit_elastic_nets(datax, datay, w_global)  #パレートセットを計算
+    assert(len(w_global) == len(pareto_set))
 
     # fig = px.scatter_3d(pd.DataFrame(pareto_set), x=0, y=1, z=2, title="The input solution map (path) of elastic net")
     # fig.show()
 
-    N_DATA = len(w)
+    N_DATA = len(w_global)
     N_TEST = N_DATA // 10
     
         
@@ -398,7 +398,7 @@ def experiment_bezier(
         pareto_set_x_front_ground_truth.detach().numpy()[i] for i in train_indices
     ])
     
-    w_local = localize_w(w, triangle=triangle)
+    w_local = localize_w(w_global, triangle=triangle)
     
     w_local_train  = torch.tensor([w_local[id] for id in train_indices])
     w_local_tensor = torch.tensor( w_local    ) # TODO no point storing this in a tensor instance
