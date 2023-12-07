@@ -346,12 +346,11 @@ def f_perturbed(x, y, thetas, eps = 1e-4):
     ]
 
 
-def split_test_train(w_global):
-    num_w = len(w_global)
-    num_tests = num_w // 10
+def split_test_train(num_points):
+    num_tests = num_points // 10
 
-    test_indices = np.random.randint(low=0, high=num_w - 1, size=num_tests).tolist()  # indices of test data
-    train_indices = [i for i in range(num_w) if i not in test_indices]  # indices of training data
+    test_indices = np.random.randint(low=0, high=num_points - 1, size=num_tests).tolist()  # indices of test data
+    train_indices = [i for i in range(num_points) if i not in test_indices]  # indices of training data
 
     return test_indices, train_indices
 
@@ -387,7 +386,7 @@ def experiment_bezier(
     # fig = px.scatter_3d(pd.DataFrame(pareto_set), x=0, y=1, z=2, title="The input solution map (path) of elastic net")
     # fig.show()
 
-    test_indices, train_indices = split_test_train(w_global=w_global)
+    test_indices, train_indices = split_test_train(num_points=len(w_global))
 
     # Pareto set x Pareto front
     pareto_set = fit_elastic_nets(datax, datay, w_global)  #パレートセットを計算
