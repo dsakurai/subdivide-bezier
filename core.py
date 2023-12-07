@@ -384,12 +384,14 @@ def experiment_bezier(
     
     np.random.seed(seed)
 
+    # Hyperparameters w in the triangle
     w_global = make_w(resolution=40, triangle=triangle) #参照三角形を生成する関数
-    
-    # fig = px.scatter_3d(pd.DataFrame(pareto_set), x=0, y=1, z=2, title="The input solution map (path) of elastic net")
-    # fig.show()
-
     test_indices, train_indices = split_test_train(num_points=len(w_global))
+
+    # Local coordinates for this triangle
+    w_local = localize_w(w_global, triangle=triangle)
+    w_local_train  = torch.tensor([w_local[id] for id in train_indices])
+    w_local_tensor = torch.tensor( w_local    ) # TODO no point storing this in a tensor instance
 
     # Pareto set x Pareto front
     pareto_set = fit_elastic_nets(datax, datay, w_global); assert(len(w_global) == len(pareto_set))
@@ -398,18 +400,8 @@ def experiment_bezier(
     pareto_set_x_front_train = torch.tensor([
         pareto_set_x_front(datax, datay, pareto_set[i]) for i in train_indices
     ])
-    
-    w_local = localize_w(w_global, triangle=triangle)
-    
-    w_local_train  = torch.tensor([w_local[id] for id in train_indices])
-    w_local_tensor = torch.tensor( w_local    ) # TODO no point storing this in a tensor instance
-    
-    # xdf = pd.DataFrame(torch.tensor(pareto_set_x_front_ground_truth)[:, 0:3], columns=['sf1','sf2','sf3'])
-    # fig = px.scatter_3d(xdf, x='sf1', y='sf2', z='sf3')
-    # fig.show()
 
-    # Use torch_bsf to learn the solution paths (i.e. solution map)
-
+    # Fit the Bezier simplex to the solution paths (i.e. solution map)
     approximation_errors = [] #テスト誤差が入るリスト
     training_timings = [] #計算時間が入るリスト
     for j in range(num_experiments):#実験の回数
