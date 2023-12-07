@@ -373,14 +373,17 @@ def experiment_bezier(
     
     # fig = px.scatter_3d(pd.DataFrame(pareto_set), x=0, y=1, z=2, title="The input solution map (path) of elastic net")
     # fig.show()
-
-    N_DATA = len(w_global)
-    N_TEST = N_DATA // 10
     
-        
-    data_indices = list(range(N_DATA))  # [0, ..., 5150]
-    test_indices = np.random.randint(low=0, high=N_DATA-1, size=N_TEST).tolist()  # indices of test data
-    train_indices = [i for i in data_indices if i not in test_indices]  # indices of training data
+    def split_test_train(w_global):
+        num_w = len(w_global)
+        num_tests = num_w // 10
+
+        test_indices = np.random.randint(low=0, high=num_w - 1, size=num_tests).tolist()  # indices of test data
+        train_indices = [i for i in range(num_w) if i not in test_indices]  # indices of training data
+
+        return test_indices, train_indices
+
+    test_indices, train_indices = split_test_train(w_global=w_global)
 
     # Pareto set x Pareto front
     pareto_set = fit_elastic_nets(datax, datay, w_global)  #パレートセットを計算
