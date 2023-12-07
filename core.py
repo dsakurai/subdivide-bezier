@@ -364,7 +364,8 @@ def experiment_bezier(
                           [ 6.0,  5.0,  4.0],
                           [ 7.0,  8.0,  9.0],
                           [12.0, 11.0, 10.0]],
-        datay: [float] = [1.0, 2.0, 3.0, 4.0]
+        datay: [float] = [1.0, 2.0, 3.0, 4.0],
+        seed=0
     ) -> ([float], [float]):
     """
     Run experiments of Bezier fitting.
@@ -379,7 +380,7 @@ def experiment_bezier(
     As we are supplying the original datax and datay, the fitting result looks different. 
     """
     
-    np.random.seed(0)
+    np.random.seed(seed)
 
     w_global = make_w(resolution=40, triangle=triangle) #参照三角形を生成する関数
     
