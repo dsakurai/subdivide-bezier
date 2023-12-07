@@ -365,9 +365,9 @@ def split_test_train(num_points):
 
     return test_indices, train_indices
 
-def pareto_set_x_front(data_x, data_y, thetas):
+def pareto_set_x_front(pareto_set, data_x, data_y):
     """Ccoordinate positions (i.e. list of Pareto set x Pareto front in elastic net)"""
-    return thetas + f_perturbed(data_x, data_y, thetas)
+    return pareto_set + f_perturbed(data_x, data_y, pareto_set)
 
 def experiment_bezier(
         triangle: [int] = [],
@@ -407,7 +407,7 @@ def experiment_bezier(
     #
     # Training dataset (subset of the ground truth)
     pareto_set_x_front_train = torch.tensor([
-        pareto_set_x_front(datax, datay, pareto_set[i]) for i in train_indices
+        pareto_set_x_front(pareto_set[i], datax, datay) for i in train_indices
     ])
 
     # Fit the Bezier simplex to the solution paths (i.e. solution map)
@@ -435,7 +435,7 @@ def experiment_bezier(
             # fig.show()
             errors = [
                 np.square(
-                    pareto_set_x_front(datax, datay, pareto_set[i])
+                    pareto_set_x_front(pareto_set[i], datax, datay)
                     # [w1, w2, w3] for index i
                     - bezier_simplex([
                         localize_w(w_global[i], triangle=triangle)
