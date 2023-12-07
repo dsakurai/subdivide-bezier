@@ -389,8 +389,7 @@ def experiment_bezier(
     test_indices, train_indices = split_test_train(num_points=len(w_global))
 
     # Pareto set x Pareto front
-    pareto_set = fit_elastic_nets(datax, datay, w_global)  #パレートセットを計算
-    assert(len(w_global) == len(pareto_set))
+    pareto_set = fit_elastic_nets(datax, datay, w_global); assert(len(w_global) == len(pareto_set))
     #
     # Ground truth coordinate positions (i.e. list of Pareto set x Pareto front in elastic net)
     pareto_set_x_front_ground_truth = torch.tensor([
