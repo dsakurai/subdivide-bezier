@@ -373,11 +373,11 @@ def experiment_bezier(
         triangle: [int] = [],
         num_experiments: [int] = 5,
         degrees: [int] = list(range(1, 31)),
-        datax: [float] = [[ 1.0,  2.0,  3.0],
+        data_x: [float] = [[ 1.0,  2.0,  3.0],
                           [ 6.0,  5.0,  4.0],
                           [ 7.0,  8.0,  9.0],
                           [12.0, 11.0, 10.0]],
-        datay: [float] = [1.0, 2.0, 3.0, 4.0],
+        data_y: [float] = [1.0, 2.0, 3.0, 4.0],
         seed=0
     ) -> ([float], [float]):
     """
@@ -385,12 +385,12 @@ def experiment_bezier(
     :param triangle: The choice of the subdivided triangle. The default is actually the largest triangle, i.e. the whole triangle
     :param num_experiments:  Run the fitting and evaluation this many times
     :param degrees: orders of polynomial in Bezier simplex fitting. The default is [1, 2,.., 30].
-    :param datax: variables to be fed for Elastic Net regression
-    :param datay: observed values for the variables datax
+    :param data_x: variables to be fed for Elastic Net regression
+    :param data_y: observed values for the variables data_x
     :return: two lists: one for errors and another for duration
     
     The default data are from Mizota et al. (arXiv:2106.12704v1). However, in their computation they normalize the data beforehand.
-    As we are supplying the original datax and datay, the fitting result looks different. 
+    As we are supplying the original data_x and data_y, the fitting result looks different. 
     """
 
     # Fit the Bezier simplex to the solution paths (i.e. solution map)
@@ -409,14 +409,14 @@ def experiment_bezier(
             test_indices, train_indices = split_test_train(num_points=len(w_global))
             
             # Ground truth: the manifold to be approximated by the Bezier simplex.
-            elastic_net_thetas = fit_elastic_nets(datax, datay, w_global); assert(len(w_global) == len(elastic_net_thetas))
+            elastic_net_thetas = fit_elastic_nets(data_x, data_y, w_global); assert(len(w_global) == len(elastic_net_thetas))
 
             # Local coordinates for this triangle
             w_local_train = torch.tensor([localize_w(w_global[id], triangle=triangle) for id in train_indices])
             
             # Pick elastic net results for training
             elastic_net_solutions_train = torch.tensor([
-                thetas_and_fs(elastic_net_thetas[i], datax, datay) for i in train_indices
+                thetas_and_fs(elastic_net_thetas[i], data_x, data_y) for i in train_indices
             ])
         
             time_start = time.perf_counter()
@@ -435,8 +435,8 @@ def experiment_bezier(
             # fig.show()
             errors = [
                 np.square(
-                    thetas_and_fs(elastic_net_thetas[i], datax, datay)
                     # [w1, w2, w3] for index i
+                    thetas_and_fs(elastic_net_thetas[i], data_x, data_y)
                     - bezier_simplex([
                         localize_w(w_global[i], triangle=triangle)
                     ]).detach().numpy())
@@ -469,7 +469,7 @@ class MyTest(unittest.TestCase):
 
         # Test without subdivision
         approximation_errors, training_timings = experiment_bezier(triangle=[], num_experiments=5, degrees=[0, 2],
-                                          # datax=x, datay=y  # Load fish. (Comment out this line to do this fitting with the default toy data)
+                                          # data_x=x, data_y=y  # Load fish. (Comment out this line to do this fitting with the default toy data)
                                           )
         
         degree_0_error = np.median(approximation_errors[0])
@@ -490,7 +490,7 @@ class MyTest(unittest.TestCase):
             )
 
         approximation_errors, training_timings = experiment_bezier(triangle=[Subdivision.triangle_center], num_experiments=5, degrees=[0, 2]
-                                          # datax=x, datay=y  # Load fish. (Comment this line to do this fitting with the default toy data)
+                                          # data_x=x, data_y=y  # Load fish. (Comment this line to do this fitting with the default toy data)
                                           )
         
         degree_0_error_triangle_center = np.median(approximation_errors[0])
