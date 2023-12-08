@@ -465,7 +465,7 @@ class MyTest(unittest.TestCase):
 
     def assertAlmostEqual(self, first, second, relative=0.1):
     
-        allow = first * relative
+        allow = second * relative # tolerance relative to the expectation
         
         super().assertAlmostEqual(
             first=first,
