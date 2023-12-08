@@ -6,8 +6,6 @@ import time
 import torch
 import torch_bsf
 import unittest
-import pytest_check
-import plotly.express as px
 
 class Subdivision:
     triangle_0      = 0
