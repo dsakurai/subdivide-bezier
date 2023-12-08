@@ -247,15 +247,16 @@ def localize_ws(
 
         return triangle_edge(level=level+1, bnd=bnd, triangle=in_f_tri)
     
-    # Make the triangle smaller by moving the boundary
-    for i in range(len(triangle_in_hierarchy)):
-        t = triangle_in_hierarchy[i]
-        if t in [Subdivision.triangle_0, Subdivision.triangle_1, Subdivision.triangle_2]:
-            triangle_edges[t] = triangle_edge(triangle=triangle_in_hierarchy[:i + 1])
-        else:
-            triangle_edges[0] = triangle_edge(triangle=triangle_in_hierarchy[:i] + [Subdivision.triangle_0])
-            triangle_edges[1] = triangle_edge(triangle=triangle_in_hierarchy[:i] + [Subdivision.triangle_1])
-            triangle_edges[2] = triangle_edge(triangle=triangle_in_hierarchy[:i] + [Subdivision.triangle_2])
+    # Make the triangle smaller by moving the triangle edges
+    for level, tri in enumerate(triangle_in_hierarchy): # Hierarchy level and triangle
+    
+        if tri in [Subdivision.triangle_0, Subdivision.triangle_1, Subdivision.triangle_2]:
+            # Triangle is in the corner.
+            triangle_edges[tri] = triangle_edge(triangle=triangle_in_hierarchy[:level + 1])
+        else: # triangle is the central one
+            triangle_edges[0] = triangle_edge(triangle=triangle_in_hierarchy[:level] + [Subdivision.triangle_0])
+            triangle_edges[1] = triangle_edge(triangle=triangle_in_hierarchy[:level] + [Subdivision.triangle_1])
+            triangle_edges[2] = triangle_edge(triangle=triangle_in_hierarchy[:level] + [Subdivision.triangle_2])
 
     return trans(triangle_in_hierarchy, triangle_edges, w)
 
