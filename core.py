@@ -193,38 +193,27 @@ def transform_ws(triangle, bnd, ws):
             tlist.append(tlist2)
     return tlist
 
-def localize_ws(
-        w: [float],
+def compute_triangle_edges(
         triangle_in_hierarchy: [int] = [] # default: largest triangle
 ):
     """
-    Convert the coordinate system.
-    The original is in the global coordinate system.
-    We transform the coordinate into a local barycentric coordinate.
-    
-    :param w: hyperparameter (w0, w1, w2) for the elastic net
     :param triangle_in_hierarchy: locates the triangle in the hierarchy of subdivided triangles
     """
     
     # The border of the target triangle.
     triangle_edges = [0.0, 0.0, 0.0]
-    # We create 
-    # border[0] (== 0.0) is the zero-th line segment of the 
-    
-    if len(triangle_in_hierarchy) == 0:
-        tlist = transform_ws(triangle_in_hierarchy, triangle_edges, w)
-        # df = pd.DataFrame(tlist)
-        return tlist
+    # The points in the i-th triangle edge have identical i-th barycentric coordinate.
+    # We store this coordinate as the i-th element of triangle_edges.
+    #
+    # For example, triangle_edges[0] is the zero-th edge, that faces the zero-th corner.
+    # triangle_edges[0] == 0.0 means that this triangle edge is identical to the largest triangle.
+    # triangle_edges[0] == 0.5 means that this triangle edge is intesects with the center of 1st and 2nd edge of the largest triangle.
 
     def triangle_edge(
             level = 1, # hierarchical level of the triangle subdivision
             bnd = 0.5,  # return value (boundary of the check)
             triangle = triangle_in_hierarchy, # the smallest triangle
     ):
-        """
-            Threshold of w for user-specified level of the triangle subdivision.
-            To decide whether w is in this corner triangle, we check whether w is larger (or smaller) than this boundary value.
-        """
 
         in_t = triangle[-1]
         in_f_tri = triangle
@@ -257,15 +246,21 @@ def localize_ws(
             triangle_edges[0] = triangle_edge(triangle=triangle_in_hierarchy[:level] + [Subdivision.triangle_0])
             triangle_edges[1] = triangle_edge(triangle=triangle_in_hierarchy[:level] + [Subdivision.triangle_1])
             triangle_edges[2] = triangle_edge(triangle=triangle_in_hierarchy[:level] + [Subdivision.triangle_2])
-
-    return transform_ws(triangle_in_hierarchy, triangle_edges, w)
+            
+    return triangle_edges
 
 def localize_w(
         w,
         triangle: [int] = [] # default: largest triangle
 ):
     """
-    参照三角形をベジエ単体近似に使えるようにパラメータを変換する。変換する三角形の三辺の境界を見つけてtrans()を呼ぶ
+    
+    Convert the coordinate system.
+    The original is in the global coordinate system.
+    We transform the coordinate into a local barycentric coordinate.
+    
+    参照三角形をベジエ単体近似に使えるようにパラメータを変換する。変換する三角形の三辺の境界を見つけてから実際の変換を行う。
+    
     :param w: (w1, w2, w3) in the original triangle
     :param triangle: a triangle in the subdivision
     :return: w in coordinates localized within `triangle`
@@ -274,8 +269,9 @@ def localize_w(
     # We get a single w and wrap it in a new list [w] so that we can use the original function.
     # As we get the output as a list, we un-wrap the element that corresponds to the input w.
     # (In fact, the output list has length 1.)
-    # TODO It's cleaner to re-write the original function and use that one instead.
-    return localize_ws([w], triangle_in_hierarchy=triangle)[0]
+
+    triangle_edges = compute_triangle_edges(triangle_in_hierarchy=triangle)
+    return transform_ws(triangle=triangle, bnd=triangle_edges, ws=[w])[0]
 
 def calc_alpha(w0, eps):
     w0 = max(w0,0.01) # TODO This 0.01 avoids explosion of alpha, but is 0.01 a good choice?
@@ -401,7 +397,7 @@ def thetas_and_fs(elastic_net_thetas, data_x, data_y):
 def fit_bezier_simplex(ws_global, triangle, degree, elastic_net_solutions):
 
     # Local coordinates for this triangle
-    w_local_train         = torch.tensor(localize_ws(ws_global, triangle_in_hierarchy=triangle))
+    w_local_train         = torch.tensor([localize_w(w_global, triangle=triangle) for w_global in ws_global])
     elastic_net_solutions = torch.tensor(elastic_net_solutions)
     
     # w -> fの対応関係を訓練したベジエ単体：単体から3次元空間への関数
