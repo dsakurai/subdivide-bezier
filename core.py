@@ -439,14 +439,14 @@ def experiment_bezier(
             np.random.seed(seed)
 
             # Hyperparameters w in the triangle
-            w_global = generate_ws_evenly(resolution=40, triangle=triangle) #参照三角形を生成する関数
+            ws_global = generate_ws_evenly(resolution=40, triangle=triangle) #参照三角形を生成する関数
             
             # Ground truth: the manifold to be approximated by the Bezier simplex.
-            elastic_net_solutions = fit_elastic_nets(data_x, data_y, w_global)
+            elastic_net_solutions = fit_elastic_nets(data_x, data_y, ws_global)
 
             # Learn the solution space of elastic net
             bezier_simplex, duration = fit_bezier_simplex(
-                ws_global=w_global,
+                ws_global=ws_global,
                 triangle=triangle,
                 # Pick elastic net results for training
                 elastic_net_solutions=[thetas_and_fs(elastic_net_solution, data_x, data_y) for elastic_net_solution in elastic_net_solutions],
@@ -454,18 +454,18 @@ def experiment_bezier(
                 )
                 
             # size of sampled hyperparameter set for testing
-            test_size = len(w_global)//10
+            test_size = len(ws_global)//10
             
-            w_global_test = generate_ws_randomly(number=test_size, triangle=triangle)
+            ws_global_test = generate_ws_randomly(number=test_size, triangle=triangle)
             
-            elastic_net_thetas_test = fit_elastic_nets(data_x, data_y, w_global_test)
+            elastic_net_thetas_test = fit_elastic_nets(data_x, data_y, ws_global_test)
             
             errors = [
                 np.square(
                     # [w1, w2, w3] for index i
                     thetas_and_fs(elastic_net_thetas_test[i], data_x, data_y)
                     - bezier_simplex([
-                        localize_w(w_global_test[i], triangle=triangle)
+                        localize_w(ws_global_test[i], triangle=triangle)
                     ]).detach().numpy())
                 for i in range(test_size)
             ]
