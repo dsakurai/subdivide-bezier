@@ -167,9 +167,7 @@ def transform_w(triangle, bnd, w):
     :param w: 変換される三角形上の座標
     :return: 変換された座標
     """
-    if len(triangle) == 0:
-        return w
-        
+
     fl = flipped(upper_triangle=triangle)
     
     if not fl:
