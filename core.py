@@ -116,24 +116,19 @@ def make_w(
         The right corner of the 2nd subdivision in the left corner of the 1st is [Subdivision.triangle_0, Subdivision.triangle_1],
         ...
     """
-    w1 = resolution
     ls = []
-    for _ in range(resolution+1): #len([0,1,2,...,100])=101
-        w2 = resolution - w1
-        w3 = 0
-        for _ in range(resolution+1):
-            if w1 + w2 + w3 == resolution and w1 >= 0 and w2 >= 0 and w3 >= 0:
-                ws = (w1/resolution,
-                      w2/resolution,
-                      w3/resolution,
-                )
-                
-                if in_triangle(triangle=triangle, w=ws):
-                    ls.append(ws)
+    # Start from resolution and decrement by 1, till reaching 0.
+    for w1 in range(resolution, -1, -1):
+        for w2 in range(resolution - w1, -1, -1):
+            w3 = resolution - w1 - w2
 
-            w2 -= 1
-            w3 += 1
-        w1 -= 1
+            ws = (w1/resolution,
+                  w2/resolution,
+                  w3/resolution,
+            )
+            
+            if in_triangle(triangle=triangle, w=ws):
+                ls.append(ws)
     return ls
 
 def trans(triangle, bnd, w):
