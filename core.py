@@ -194,19 +194,32 @@ def trans(triangle, bnd, w):
     return tlist
 
 def localize_ws(
-        w,
-        triangle: [int] = [] # default: largest triangle
+        w: [float],
+        triangle_in_hierarchy: [int] = [] # default: largest triangle
 ):
-    border = [0.0, 0.0, 0.0]
-    if len(triangle) == 0:
-        tlist = trans(triangle, border, w)
+    """
+    Convert the coordinate system.
+    The original is in the global coordinate system.
+    We transform the coordinate into a local barycentric coordinate.
+    
+    :param w: hyperparameter (w0, w1, w2) for the elastic net
+    :param triangle_in_hierarchy: locates the triangle in the hierarchy of subdivided triangles
+    """
+    
+    # The border of the target triangle.
+    triangle_edges = [0.0, 0.0, 0.0]
+    # We create 
+    # border[0] (== 0.0) is the zero-th line segment of the 
+    
+    if len(triangle_in_hierarchy) == 0:
+        tlist = trans(triangle_in_hierarchy, triangle_edges, w)
         # df = pd.DataFrame(tlist)
         return tlist
 
-    def boundary(
+    def triangle_edge(
             level = 1, # hierarchical level of the triangle subdivision
             bnd = 0.5,  # return value (boundary of the check)
-            triangle = triangle, # the smallest triangle
+            triangle = triangle_in_hierarchy, # the smallest triangle
     ):
         """
             Threshold of w for user-specified level of the triangle subdivision.
@@ -232,20 +245,23 @@ def localize_ws(
             else:
                 bnd += 1 / 2 ** (level + 1) # move left
 
-        return boundary(level=level+1, bnd=bnd, triangle=in_f_tri)
+        return triangle_edge(level=level+1, bnd=bnd, triangle=in_f_tri)
     i = 0
+    
+    # Make the triangle smaller by moving the boundary
+    
     while True:
-        t = triangle[i]
+        t = triangle_in_hierarchy[i]
         if t in [Subdivision.triangle_0, Subdivision.triangle_1, Subdivision.triangle_2]:
-            border[t] = boundary(triangle=triangle[:i+1])
+            triangle_edges[t] = triangle_edge(triangle=triangle_in_hierarchy[:i + 1])
         else:
-            border[0] = boundary(triangle=triangle[:i]+[Subdivision.triangle_0])
-            border[1] = boundary(triangle=triangle[:i]+[Subdivision.triangle_1])
-            border[2] = boundary(triangle=triangle[:i]+[Subdivision.triangle_2])
-        if i == len(triangle) - 1:
+            triangle_edges[0] = triangle_edge(triangle=triangle_in_hierarchy[:i] + [Subdivision.triangle_0])
+            triangle_edges[1] = triangle_edge(triangle=triangle_in_hierarchy[:i] + [Subdivision.triangle_1])
+            triangle_edges[2] = triangle_edge(triangle=triangle_in_hierarchy[:i] + [Subdivision.triangle_2])
+        if i == len(triangle_in_hierarchy) - 1:
             break
         i += 1
-    tlist = trans(triangle, border, w)
+    tlist = trans(triangle_in_hierarchy, triangle_edges, w)
     # df = pd.DataFrame(tlist)
     return tlist
 
@@ -264,7 +280,7 @@ def localize_w(
     # As we get the output as a list, we un-wrap the element that corresponds to the input w.
     # (In fact, the output list has length 1.)
     # TODO It's cleaner to re-write the original function and use that one instead.
-    return localize_ws([w], triangle=triangle)[0]
+    return localize_ws([w], triangle_in_hierarchy=triangle)[0]
 
 def calc_alpha(w0, eps):
     w0 = max(w0,0.01) # TODO This 0.01 avoids explosion of alpha, but is 0.01 a good choice?
@@ -390,7 +406,7 @@ def thetas_and_fs(elastic_net_thetas, data_x, data_y):
 def fit_bezier_simplex(ws_global, triangle, degree, elastic_net_solutions):
 
     # Local coordinates for this triangle
-    w_local_train         = torch.tensor(localize_ws(ws_global, triangle=triangle))
+    w_local_train         = torch.tensor(localize_ws(ws_global, triangle_in_hierarchy=triangle))
     elastic_net_solutions = torch.tensor(elastic_net_solutions)
     
     # w -> fの対応関係を訓練したベジエ単体：単体から3次元空間への関数
