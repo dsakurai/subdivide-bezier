@@ -159,7 +159,7 @@ def generate_ws_randomly(
             ls.append(w)
     return ls
     
-def trans(triangle, bnd, w):
+def transform_ws(triangle, bnd, w):
     """
     参照三角形をベジエ単体近似に使えるようにパラメータを変換する。変換のための関数。
     :param triangle: 変換される三角形
@@ -212,7 +212,7 @@ def localize_ws(
     # border[0] (== 0.0) is the zero-th line segment of the 
     
     if len(triangle_in_hierarchy) == 0:
-        tlist = trans(triangle_in_hierarchy, triangle_edges, w)
+        tlist = transform_ws(triangle_in_hierarchy, triangle_edges, w)
         # df = pd.DataFrame(tlist)
         return tlist
 
@@ -258,7 +258,7 @@ def localize_ws(
             triangle_edges[1] = triangle_edge(triangle=triangle_in_hierarchy[:level] + [Subdivision.triangle_1])
             triangle_edges[2] = triangle_edge(triangle=triangle_in_hierarchy[:level] + [Subdivision.triangle_2])
 
-    return trans(triangle_in_hierarchy, triangle_edges, w)
+    return transform_ws(triangle_in_hierarchy, triangle_edges, w)
 
 def localize_w(
         w,
