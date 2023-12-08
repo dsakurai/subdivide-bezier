@@ -16,13 +16,13 @@ class Subdivision:
     triangle_center = 3
 
 # Number of flips in the triangle
-def flipped(upper_triangle):
+def upside_down(triangle):
     """
-    Check if the upper_triangle is flipped or not.
-    :param upper_triangle: 一つ上の階層の三角形
+    Check if the upper_triangle is upside-down.
+    :param triangle: The triangle to be checked
     :return: True / False
     """
-    num_flips = upper_triangle.count(Subdivision.triangle_center)
+    num_flips = triangle.count(Subdivision.triangle_center)
     return num_flips % 2 == 1
 
 def in_triangle_(smallest_triangle: [int], w: [float], c= 0):
@@ -62,7 +62,7 @@ def in_triangle_(smallest_triangle: [int], w: [float], c= 0):
             if level == len(smallest_triangle): return bnd
 
             tri = smallest_triangle[level - 1]
-            fl = flipped(smallest_triangle[:level-1])
+            fl = upside_down(smallest_triangle[:level - 1])
             if tri == t: # check inside?
                 # yes
                 if not fl:
@@ -78,10 +78,10 @@ def in_triangle_(smallest_triangle: [int], w: [float], c= 0):
             return boundary(level=level+1, bnd=bnd)
 
         if c != 1:
-            if not flipped(upper_triangle): return w[t] >= boundary()
+            if not upside_down(upper_triangle): return w[t] >= boundary()
             else:                           return w[t] <= boundary()
         else:
-            if not flipped(upper_triangle): return w[t] > boundary()
+            if not upside_down(upper_triangle): return w[t] > boundary()
             else:                           return w[t] < boundary()
     else:
         if t != Subdivision.triangle_center : raise Exception("Bad triangle")
@@ -168,9 +168,7 @@ def transform_w(triangle, bnd, w):
     :return: 変換された座標
     """
 
-    fl = flipped(upper_triangle=triangle)
-    
-    if not fl:
+    if not upside_down(triangle=triangle):
         return [
             (w[0] - bnd[0])*(2 **len(triangle)),
             (w[1] - bnd[1])*(2 **len(triangle)),
@@ -211,7 +209,7 @@ def compute_triangle_edges(
         if level == len(triangle): return bnd
 
         tri = triangle[level - 1]
-        fl = flipped(triangle[:level-1])
+        fl = upside_down(triangle[:level - 1])
         if tri == in_t: # check inside?
             # yes
             if not fl:
