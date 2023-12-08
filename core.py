@@ -444,12 +444,12 @@ def experiment_bezier(
             # Ground truth: the manifold to be approximated by the Bezier simplex.
             elastic_net_thetas = fit_elastic_nets(data_x, data_y, w_global)
 
-            train_size = len(w_global)
+            # Learn the solution space of elastic net
             bezier_simplex, duration = fit_bezier_simplex(
                 ws_global=w_global,
                 triangle=triangle,
                 # Pick elastic net results for training
-                elastic_net_solutions=[thetas_and_fs(elastic_net_thetas[i], data_x, data_y) for i in range(train_size)],
+                elastic_net_solutions=[thetas_and_fs(elastic_net_thetas[i], data_x, data_y) for i in range(len(elastic_net_thetas))],
                 degree=d
                 )
                 
