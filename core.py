@@ -117,18 +117,17 @@ def make_w(
         ...
     """
     ls = []
-    # Start from resolution and decrement by 1, till reaching 0.
-    for w1 in range(resolution, -1, -1):
-        for w2 in range(resolution - w1, -1, -1):
+    for w1 in range(resolution + 1):
+        for w2 in range(resolution - w1 + 1):
             w3 = resolution - w1 - w2
 
-            ws = (w1/resolution,
-                  w2/resolution,
-                  w3/resolution,
+            w = (w1/resolution,
+                 w2/resolution,
+                 w3/resolution,
             )
             
-            if in_triangle(triangle=triangle, w=ws):
-                ls.append(ws)
+            if in_triangle(triangle=triangle, w=w):
+                ls.append(w)
     return ls
 
 def trans(triangle, bnd, w):
