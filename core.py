@@ -246,11 +246,9 @@ def localize_ws(
                 bnd += 1 / 2 ** (level + 1) # move left
 
         return triangle_edge(level=level+1, bnd=bnd, triangle=in_f_tri)
-    i = 0
     
     # Make the triangle smaller by moving the boundary
-    
-    while True:
+    for i in range(len(triangle_in_hierarchy)):
         t = triangle_in_hierarchy[i]
         if t in [Subdivision.triangle_0, Subdivision.triangle_1, Subdivision.triangle_2]:
             triangle_edges[t] = triangle_edge(triangle=triangle_in_hierarchy[:i + 1])
@@ -258,12 +256,8 @@ def localize_ws(
             triangle_edges[0] = triangle_edge(triangle=triangle_in_hierarchy[:i] + [Subdivision.triangle_0])
             triangle_edges[1] = triangle_edge(triangle=triangle_in_hierarchy[:i] + [Subdivision.triangle_1])
             triangle_edges[2] = triangle_edge(triangle=triangle_in_hierarchy[:i] + [Subdivision.triangle_2])
-        if i == len(triangle_in_hierarchy) - 1:
-            break
-        i += 1
-    tlist = trans(triangle_in_hierarchy, triangle_edges, w)
-    # df = pd.DataFrame(tlist)
-    return tlist
+
+    return trans(triangle_in_hierarchy, triangle_edges, w)
 
 def localize_w(
         w,
