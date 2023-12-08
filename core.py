@@ -442,14 +442,14 @@ def experiment_bezier(
             w_global = generate_ws_evenly(resolution=40, triangle=triangle) #参照三角形を生成する関数
             
             # Ground truth: the manifold to be approximated by the Bezier simplex.
-            elastic_net_thetas = fit_elastic_nets(data_x, data_y, w_global)
+            elastic_net_solutions = fit_elastic_nets(data_x, data_y, w_global)
 
             # Learn the solution space of elastic net
             bezier_simplex, duration = fit_bezier_simplex(
                 ws_global=w_global,
                 triangle=triangle,
                 # Pick elastic net results for training
-                elastic_net_solutions=[thetas_and_fs(elastic_net_thetas[i], data_x, data_y) for i in range(len(elastic_net_thetas))],
+                elastic_net_solutions=[thetas_and_fs(elastic_net_solution, data_x, data_y) for elastic_net_solution in elastic_net_solutions],
                 degree=d
                 )
                 
