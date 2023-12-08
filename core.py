@@ -102,7 +102,7 @@ def in_triangle(triangle: [int], w: [float]):
             return False
     return True
 
-def make_w(
+def generate_ws_evenly(
         resolution: int = 100,
         triangle: [int] = [] # default: largest triangle
 ):
@@ -130,6 +130,35 @@ def make_w(
                 ls.append(w)
     return ls
 
+def generate_ws_randomly(
+        number: int = 100,
+        triangle: [int] = [] # default: largest triangle
+):
+
+    def random_w():
+        """
+        :return: A hyperparameter w that 
+        """
+
+        x = np.random.rand()
+        y = np.random.uniform(0, 1-x)
+        z = 1.0 - (x + y)
+
+        y = min(y, 1.0)
+        y = max(y, 0.0)
+
+        z = min(z, 1.0)
+        z = max(z, 0.0)
+
+        return (x, y, z)
+    
+    ls = []
+    while len(ls) != number:
+        w = random_w()
+        if in_triangle(triangle=triangle, w=w):
+            ls.append(w)
+    return ls
+    
 def trans(triangle, bnd, w):
     """
     参照三角形をベジエ単体近似に使えるようにパラメータを変換する。変換のための関数。
@@ -410,33 +439,35 @@ def experiment_bezier(
             np.random.seed(seed)
 
             # Hyperparameters w in the triangle
-            w_global = make_w(resolution=40, triangle=triangle) #参照三角形を生成する関数
-            test_indices, train_indices = split_test_train(num_points=len(w_global))
+            w_global = generate_ws_evenly(resolution=40, triangle=triangle) #参照三角形を生成する関数
             
             # Ground truth: the manifold to be approximated by the Bezier simplex.
-            elastic_net_thetas = fit_elastic_nets(data_x, data_y, w_global); assert(len(w_global) == len(elastic_net_thetas))
+            elastic_net_thetas = fit_elastic_nets(data_x, data_y, w_global)
 
+            train_size = len(w_global)
             bezier_simplex, duration = fit_bezier_simplex(
-                ws_global=[w_global[id] for id in train_indices],
+                ws_global=w_global,
                 triangle=triangle,
                 # Pick elastic net results for training
-                elastic_net_solutions=[thetas_and_fs(elastic_net_thetas[i], data_x, data_y) for i in train_indices],
+                elastic_net_solutions=[thetas_and_fs(elastic_net_thetas[i], data_x, data_y) for i in range(train_size)],
                 degree=d
                 )
+                
+            # size of sampled hyperparameter set for testing
+            test_size = len(w_global)//10
             
-            # _, bts = bezier_simplex.meshgrid(num=100)
-            # bts = bts.detach() # TODO can we remove this line?
-            # df = pd.DataFrame(bts[:, 0:3],columns=['sf1','sf2','sf3'])
-            # fig = px.scatter_3d(df, x='sf1', y='sf2', z='sf3')
-            # fig.show()
+            w_global_test = generate_ws_randomly(number=test_size, triangle=triangle)
+            
+            elastic_net_thetas_test = fit_elastic_nets(data_x, data_y, w_global_test)
+            
             errors = [
                 np.square(
                     # [w1, w2, w3] for index i
-                    thetas_and_fs(elastic_net_thetas[i], data_x, data_y)
+                    thetas_and_fs(elastic_net_thetas_test[i], data_x, data_y)
                     - bezier_simplex([
-                        localize_w(w_global[i], triangle=triangle)
+                        localize_w(w_global_test[i], triangle=triangle)
                     ]).detach().numpy())
-                for i in test_indices
+                for i in range(test_size)
             ]
 
             approximation_errors_j.append(

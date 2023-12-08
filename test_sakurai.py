@@ -1,5 +1,5 @@
 import pytest
-from core import make_w, in_triangle_
+from core import generate_ws_evenly, in_triangle_
 
 def test_in_triangle():
     # largest triangle
@@ -167,8 +167,8 @@ def test_in_triangle():
 
 def test_make_w():
     global answer_default, answer_resolution_3
-    assert make_w()               == answer_default # Largest triangle
-    assert make_w(resolution = 3) == answer_resolution_3
+    assert generate_ws_evenly() == answer_default # Largest triangle
+    assert generate_ws_evenly(resolution = 3) == answer_resolution_3
 
 answer_resolution_3 = [[1.0, 0.0, 0.0], [0.6666666666666666, 0.3333333333333333, 0.0], [0.6666666666666666, 0.0, 0.3333333333333333], [0.3333333333333333, 0.6666666666666666, 0.0], [0.3333333333333333, 0.3333333333333333, 0.3333333333333333], [0.3333333333333333, 0.0, 0.6666666666666666], [0.0, 1.0, 0.0], [0.0, 0.6666666666666666, 0.3333333333333333], [0.0, 0.3333333333333333, 0.6666666666666666], [0.0, 0.0, 1.0]]
 
