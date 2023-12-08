@@ -173,23 +173,19 @@ def transform_ws(triangle, bnd, ws):
     fl = flipped(upper_triangle=triangle)
     if not fl:
         for w in ws:
-            tlist2 = []
-            t1 = (w[0] - bnd[0])*(2 **len(triangle))
-            t2 = (w[1] - bnd[1])*(2 **len(triangle))
-            t3 = (w[2] - bnd[2])*(2 **len(triangle))
-            tlist2.append(t1)
-            tlist2.append(t2)
-            tlist2.append(t3)
+            tlist2 = [
+                (w[0] - bnd[0])*(2 **len(triangle)),
+                (w[1] - bnd[1])*(2 **len(triangle)),
+                (w[2] - bnd[2])*(2 **len(triangle)),
+            ]
             tlist.append(tlist2)
     else:
         for w in ws:
-            tlist2 = []
-            t1 = (bnd[0] - w[0])*(2 **len(triangle))
-            t2 = (bnd[1] - w[1])*(2 **len(triangle))
-            t3 = (bnd[2] - w[2])*(2 **len(triangle))
-            tlist2.append(t1)
-            tlist2.append(t2)
-            tlist2.append(t3)
+            tlist2 = [
+                (bnd[0] - w[0])*(2 **len(triangle)),
+                (bnd[1] - w[1])*(2 **len(triangle)),
+                (bnd[2] - w[2])*(2 **len(triangle)),
+            ]
             tlist.append(tlist2)
     return tlist
 
