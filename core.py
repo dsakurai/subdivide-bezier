@@ -159,35 +159,31 @@ def generate_ws_randomly(
             ls.append(w)
     return ls
     
-def transform_ws(triangle, bnd, ws):
+def transform_w(triangle, bnd, w):
     """
     参照三角形をベジエ単体近似に使えるようにパラメータを変換する。変換のための関数。
     :param triangle: 変換される三角形
     :param bnd: 変換される三角形の三辺の境界の値
-    :param ws: 変換される三角形上の座標
+    :param w: 変換される三角形上の座標
     :return: 変換された座標
     """
-    tlist = []
     if len(triangle) == 0:
-        return ws
+        return w
+        
     fl = flipped(upper_triangle=triangle)
+    
     if not fl:
-        for w in ws:
-            tlist2 = [
-                (w[0] - bnd[0])*(2 **len(triangle)),
-                (w[1] - bnd[1])*(2 **len(triangle)),
-                (w[2] - bnd[2])*(2 **len(triangle)),
-            ]
-            tlist.append(tlist2)
+        return [
+            (w[0] - bnd[0])*(2 **len(triangle)),
+            (w[1] - bnd[1])*(2 **len(triangle)),
+            (w[2] - bnd[2])*(2 **len(triangle)),
+        ]
     else:
-        for w in ws:
-            tlist2 = [
-                (bnd[0] - w[0])*(2 **len(triangle)),
-                (bnd[1] - w[1])*(2 **len(triangle)),
-                (bnd[2] - w[2])*(2 **len(triangle)),
-            ]
-            tlist.append(tlist2)
-    return tlist
+        return [
+            (bnd[0] - w[0])*(2 **len(triangle)),
+            (bnd[1] - w[1])*(2 **len(triangle)),
+            (bnd[2] - w[2])*(2 **len(triangle)),
+        ]
 
 def compute_triangle_edges(
         triangle_in_hierarchy: [int] = [] # default: largest triangle
@@ -267,7 +263,7 @@ def localize_w(
     # (In fact, the output list has length 1.)
 
     triangle_edges = compute_triangle_edges(triangle_in_hierarchy=triangle)
-    return transform_ws(triangle=triangle, bnd=triangle_edges, ws=[w])[0]
+    return transform_w(triangle=triangle, bnd=triangle_edges, w=w)
 
 def calc_alpha(w0, eps):
     w0 = max(w0,0.01) # TODO This 0.01 avoids explosion of alpha, but is 0.01 a good choice?
