@@ -123,19 +123,14 @@ def make_w(
         w3 = 0
         for _ in range(resolution+1):
             if w1 + w2 + w3 == resolution and w1 >= 0 and w2 >= 0 and w3 >= 0:
-                list2 = []
-                list2.append(w1/resolution)
-                list2.append(w2/resolution)
-                list2.append(w3/resolution)
-                i = 0
-                while True:
-                    if in_triangle_(smallest_triangle=triangle[:i],w=list2):
-                        if i == len(triangle):
-                            ls.append(list2)
-                            break
-                    else:
-                        break
-                    i+=1
+                ws = (w1/resolution,
+                      w2/resolution,
+                      w3/resolution,
+                )
+                
+                if in_triangle(triangle=triangle, w=ws):
+                    ls.append(ws)
+
             w2 -= 1
             w3 += 1
         w1 -= 1
