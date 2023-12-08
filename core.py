@@ -159,34 +159,34 @@ def generate_ws_randomly(
             ls.append(w)
     return ls
     
-def transform_ws(triangle, bnd, w):
+def transform_ws(triangle, bnd, ws):
     """
     参照三角形をベジエ単体近似に使えるようにパラメータを変換する。変換のための関数。
     :param triangle: 変換される三角形
     :param bnd: 変換される三角形の三辺の境界の値
-    :param w: 変換される三角形上の座標
+    :param ws: 変換される三角形上の座標
     :return: 変換された座標
     """
     tlist = []
     if len(triangle) == 0:
-        return w
+        return ws
     fl = flipped(upper_triangle=triangle)
     if not fl:
-        for i in w:
+        for w in ws:
             tlist2 = []
-            t1 = (i[0] - bnd[0])*(2 **len(triangle))
-            t2 = (i[1] - bnd[1])*(2 **len(triangle))
-            t3 = (i[2] - bnd[2])*(2 **len(triangle))
+            t1 = (w[0] - bnd[0])*(2 **len(triangle))
+            t2 = (w[1] - bnd[1])*(2 **len(triangle))
+            t3 = (w[2] - bnd[2])*(2 **len(triangle))
             tlist2.append(t1)
             tlist2.append(t2)
             tlist2.append(t3)
             tlist.append(tlist2)
     else:
-        for i in w:
+        for w in ws:
             tlist2 = []
-            t1 = (bnd[0] - i[0])*(2 **len(triangle))
-            t2 = (bnd[1] - i[1])*(2 **len(triangle))
-            t3 = (bnd[2] - i[2])*(2 **len(triangle))
+            t1 = (bnd[0] - w[0])*(2 **len(triangle))
+            t2 = (bnd[1] - w[1])*(2 **len(triangle))
+            t3 = (bnd[2] - w[2])*(2 **len(triangle))
             tlist2.append(t1)
             tlist2.append(t2)
             tlist2.append(t3)
