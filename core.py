@@ -88,74 +88,6 @@ def in_triangle_(smallest_triangle: [int], w: [float], c= 0):
                 (not in_triangle_(smallest_triangle=smallest_triangle[:-1] + [Subdivision.triangle_1], w=w,c= 1)) and \
                 (not in_triangle_(smallest_triangle=smallest_triangle[:-1] + [Subdivision.triangle_2], w=w,c= 1))
 
-def in_triangle(triangle: [int], w: [float]):
-
-    def outside (triangle, w):
-        return not in_triangle_(triangle, w)
-
-    levels = range(len(triangle) + 1)
-
-    for lev in levels:
-        if outside(triangle[0:lev], w):
-            return False
-    return True
-
-def generate_ws_evenly(
-        resolution: int = 100,
-        triangle: [int] = [] # default: largest triangle
-):
-    """
-    Return [(w1, w2, w3)].
-    :param resolution: number of points along each edge of the (largest, i.e. global) triangle
-    :param triangle: [...].
-        The smaller triangle within the largest one. This is an enum from `Subdivision`.
-        The largest triangle is [].
-        The left corner of the first subdivision is [Subdivision.triangle_0]
-        The right corner of the 2nd subdivision in the left corner of the 1st is [Subdivision.triangle_0, Subdivision.triangle_1],
-        ...
-    """
-    ls = []
-    for w1 in range(resolution + 1):
-        for w2 in range(resolution - w1 + 1):
-            w3 = resolution - w1 - w2
-
-            w = (w1/resolution,
-                 w2/resolution,
-                 w3/resolution,
-            )
-            
-            if in_triangle(triangle=triangle, w=w):
-                ls.append(w)
-    return ls
-
-def generate_ws_randomly(
-        number: int = 100,
-        triangle: [int] = [] # default: largest triangle
-):
-
-    def random_w():
-        """
-        :return: A hyperparameter w that 
-        """
-
-        x = np.random.rand()
-        y = np.random.uniform(0, 1-x)
-        z = 1.0 - (x + y)
-
-        y = min(y, 1.0)
-        y = max(y, 0.0)
-
-        z = min(z, 1.0)
-        z = max(z, 0.0)
-
-        return (x, y, z)
-    
-    ls = []
-    while len(ls) != number:
-        w = random_w()
-        if in_triangle(triangle=triangle, w=w):
-            ls.append(w)
-    return ls
     
 def transform_w(triangle, bnd, w):
     """
@@ -377,7 +309,78 @@ class Triangle:
     def __init__(self, hierarchical_position: [int] = []):
         self._resolution = 40 
         self._hierarchical_position = hierarchical_position
+
+    def in_triangle(self, w: [float]):
+
+        def outside (triangle, w):
+            return not in_triangle_(triangle, w)
+
+        levels = range(len(self._hierarchical_position) + 1)
+
+        for lev in levels:
+            if outside(self._hierarchical_position[0:lev], w):
+                return False
+        return True
+
+
+    def generate_ws_randomly(self, number):
+    
+        # number = self._resolution # A bit arbitrary, but does the job...
+
+        def random_w():
+            """
+            :return: A hyperparameter w that 
+            """
+
+            x = np.random.rand()
+            y = np.random.uniform(0, 1-x)
+            z = 1.0 - (x + y)
+
+            y = min(y, 1.0)
+            y = max(y, 0.0)
+
+            z = min(z, 1.0)
+            z = max(z, 0.0)
+
+            return (x, y, z)
+
+        # TODO With this hack, the performance becomes slower as the triangle gets smaller...
+        ls = []
+        while len(ls) != number:
+            w = random_w()
+            if self.in_triangle(w=w):
+                ls.append(w)
+        return ls
+
+    def generate_ws_evenly(
+            self
+    ):
+        """
+        Return [(w1, w2, w3)].
+        :param resolution: number of points along each edge of the (largest, i.e. global) triangle
+        :param triangle: [...].
+            The smaller triangle within the largest one. This is an enum from `Subdivision`.
+            The largest triangle is [].
+            The left corner of the first subdivision is [Subdivision.triangle_0]
+            The right corner of the 2nd subdivision in the left corner of the 1st is [Subdivision.triangle_0, Subdivision.triangle_1],
+            ...
+        """
+        resolution = self._resolution
         
+        ls = []
+        for w1 in range(resolution + 1):
+            for w2 in range(resolution - w1 + 1):
+                w3 = resolution - w1 - w2
+
+                w = (w1/resolution,
+                     w2/resolution,
+                     w3/resolution,
+                     )
+
+                if self.in_triangle(w=w):
+                    ls.append(w)
+        return ls
+
     def localize_w(self,
         w_global: [float]
     ):
@@ -439,7 +442,7 @@ def experiment_bezier(
             np.random.seed(seed)
 
             # Hyperparameters w in the triangle
-            ws_global = generate_ws_evenly(resolution=triangle._resolution, triangle=triangle._hierarchical_position) #参照三角形を生成する関数
+            ws_global = triangle.generate_ws_evenly() #参照三角形を生成する関数
             
             # Ground truth: the manifold to be approximated by the Bezier simplex.
             elastic_net_solutions = fit_elastic_nets(data_x, data_y, ws_global)
@@ -456,7 +459,7 @@ def experiment_bezier(
             # size of sampled hyperparameter set for testing
             test_size = len(ws_global)//10
             
-            ws_global_test = generate_ws_randomly(number=test_size, triangle=triangle._hierarchical_position)
+            ws_global_test = triangle.generate_ws_randomly(number=test_size)
             
             elastic_net_thetas_test = fit_elastic_nets(data_x, data_y, ws_global_test)
             
