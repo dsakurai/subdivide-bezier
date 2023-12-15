@@ -235,30 +235,6 @@ def compute_triangle_edges(
             
     return triangle_edges
 
-def localize_w(
-        w,
-        triangle: [int] = [] # default: largest triangle
-):
-    """
-    
-    Convert the coordinate system.
-    The original is in the global coordinate system.
-    We transform the coordinate into a local barycentric coordinate.
-    
-    参照三角形をベジエ単体近似に使えるようにパラメータを変換する。変換する三角形の三辺の境界を見つけてから実際の変換を行う。
-    
-    :param w: (w1, w2, w3) in the original triangle
-    :param triangle: a triangle in the subdivision
-    :return: w in coordinates localized within `triangle`
-    """
-    # The original function expects a set of ws.
-    # We get a single w and wrap it in a new list [w] so that we can use the original function.
-    # As we get the output as a list, we un-wrap the element that corresponds to the input w.
-    # (In fact, the output list has length 1.)
-
-    triangle_edges = compute_triangle_edges(triangle_in_hierarchy=triangle)
-    return transform_w(triangle=triangle, bnd=triangle_edges, w=w)
-
 def calc_alpha(w0, eps):
     w0 = max(w0,0.01) # TODO This 0.01 avoids explosion of alpha, but is 0.01 a good choice?
     return (1 - w0 + eps) / w0
@@ -383,7 +359,7 @@ def thetas_and_fs(elastic_net_thetas, data_x, data_y):
 def fit_bezier_simplex(ws_global, triangle, degree, elastic_net_solutions):
 
     # Local coordinates for this triangle
-    w_local_train         = torch.tensor([localize_w(w_global, triangle=triangle) for w_global in ws_global])
+    w_local_train         = torch.tensor([triangle.localize_w(w_global) for w_global in ws_global])
     elastic_net_solutions = torch.tensor(elastic_net_solutions)
     
     # w -> fの対応関係を訓練したベジエ単体：単体から3次元空間への関数
@@ -396,8 +372,39 @@ def fit_bezier_simplex(ws_global, triangle, degree, elastic_net_solutions):
     
     return bezier_simplex, (time_end - time_start)
 
+
+class Triangle:
+    def __init__(self, hierarchical_position: [int] = []):
+        self._resolution = 40 
+        self._hierarchical_position = hierarchical_position
+        
+    def localize_w(self,
+        w_global: [float]
+    ):
+        """
+        Convert the coordinate system.
+        The original is in the global coordinate system.
+        We transform the coordinate into a local barycentric coordinate.
+        
+        参照三角形をベジエ単体近似に使えるようにパラメータを変換する。変換する三角形の三辺の境界を見つけてから実際の変換を行う。
+        
+        :param w_global: (w1, w2, w3) in the original triangle, i.e. hyperparameters as barycentric coordinates, like (0.0, 0.0, 1.0)
+        
+        :param triangle: a triangle in the subdivision
+        :return: w in coordinates localized within `triangle`
+        """
+        # The original function expects a set of ws.
+        # We get a single w and wrap it in a new list [w] so that we can use the original function.
+        # As we get the output as a list, we un-wrap the element that corresponds to the input w.
+        # (In fact, the output list has length 1.)
+        
+        triangle = self._hierarchical_position
+
+        triangle_edges = compute_triangle_edges(triangle_in_hierarchy=triangle)
+        return transform_w(triangle=triangle, bnd=triangle_edges, w=w_global)
+
 def experiment_bezier(
-        triangle: [int] = [],
+        triangle: Triangle = Triangle(),
         num_experiments: [int] = 5,
         degrees: [int] = list(range(1, 31)),
         data_x: [float] = [[ 1.0,  2.0,  3.0],
@@ -432,7 +439,7 @@ def experiment_bezier(
             np.random.seed(seed)
 
             # Hyperparameters w in the triangle
-            ws_global = generate_ws_evenly(resolution=40, triangle=triangle) #参照三角形を生成する関数
+            ws_global = generate_ws_evenly(resolution=triangle._resolution, triangle=triangle._hierarchical_position) #参照三角形を生成する関数
             
             # Ground truth: the manifold to be approximated by the Bezier simplex.
             elastic_net_solutions = fit_elastic_nets(data_x, data_y, ws_global)
@@ -449,7 +456,7 @@ def experiment_bezier(
             # size of sampled hyperparameter set for testing
             test_size = len(ws_global)//10
             
-            ws_global_test = generate_ws_randomly(number=test_size, triangle=triangle)
+            ws_global_test = generate_ws_randomly(number=test_size, triangle=triangle._hierarchical_position)
             
             elastic_net_thetas_test = fit_elastic_nets(data_x, data_y, ws_global_test)
             
@@ -458,7 +465,7 @@ def experiment_bezier(
                     # [w1, w2, w3] for index i
                     thetas_and_fs(elastic_net_thetas_test[i], data_x, data_y)
                     - bezier_simplex([
-                        localize_w(ws_global_test[i], triangle=triangle)
+                        triangle.localize_w(ws_global_test[i])
                     ]).detach().numpy())
                 for i in range(test_size)
             ]
@@ -488,7 +495,7 @@ class MyTest(unittest.TestCase):
     def test_bezier(self):
 
         # Test without subdivision
-        approximation_errors, training_timings = experiment_bezier(triangle=[], num_experiments=5, degrees=[0, 2],
+        approximation_errors, training_timings = experiment_bezier(num_experiments=5, degrees=[0, 2],
                                           # data_x=x, data_y=y  # Load fish. (Comment out this line to do this fitting with the default toy data)
                                           )
         
@@ -509,7 +516,7 @@ class MyTest(unittest.TestCase):
                 relative=0.5
             )
 
-        approximation_errors, training_timings = experiment_bezier(triangle=[Subdivision.triangle_center], num_experiments=5, degrees=[0, 2]
+        approximation_errors, training_timings = experiment_bezier(triangle=Triangle(hierarchical_position=[Subdivision.triangle_center]), num_experiments=5, degrees=[0, 2]
                                           # data_x=x, data_y=y  # Load fish. (Comment this line to do this fitting with the default toy data)
                                           )
         
