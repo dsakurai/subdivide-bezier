@@ -288,10 +288,10 @@ def thetas_and_fs(elastic_net_thetas, data_x, data_y):
     """Ccoordinate positions (i.e. list of Pareto set x Pareto front in elastic net)"""
     return elastic_net_thetas + f_perturbed(data_x, data_y, elastic_net_thetas)
 
-def fit_bezier_simplex(ws_global, triangle, degree, elastic_net_solutions):
+def fit_bezier_simplex(ws_global, triangle_in_w_space, degree, elastic_net_solutions):
 
     # Local coordinates for this triangle
-    w_local_train         = torch.tensor([triangle.localize_w(w_global) for w_global in ws_global])
+    w_local_train         = torch.tensor([triangle_in_w_space.localize_w(w_global) for w_global in ws_global])
     elastic_net_solutions = torch.tensor(elastic_net_solutions)
     
     # w -> fの対応関係を訓練したベジエ単体：単体から3次元空間への関数
@@ -305,7 +305,10 @@ def fit_bezier_simplex(ws_global, triangle, degree, elastic_net_solutions):
     return bezier_simplex, (time_end - time_start)
 
 
-class Triangle:
+class Triangle_in_w_space:
+    """
+    A (subdivided) triangle in the space of hyperparameter w.
+    """
     def __init__(self, hierarchical_position: [int] = []):
         self._resolution = 40 
         self._hierarchical_position = hierarchical_position
@@ -407,7 +410,7 @@ class Triangle:
         return transform_w(triangle=triangle, bnd=triangle_edges, w=w_global)
 
 def experiment_bezier(
-        triangle: Triangle = Triangle(),
+        triangle_in_w_space: Triangle_in_w_space = Triangle_in_w_space(),
         num_experiments: [int] = 5,
         degrees: [int] = list(range(1, 31)),
         data_x: [float] = [[ 1.0,  2.0,  3.0],
@@ -419,7 +422,7 @@ def experiment_bezier(
     ) -> ([float], [float]):
     """
     Run experiments of Bezier fitting.
-    :param triangle: The choice of the subdivided triangle. The default is actually the largest triangle, i.e. the whole triangle
+    :param triangle_in_w_space: The choice of the subdivided triangle. The default is actually the largest triangle, i.e. the whole triangle
     :param num_experiments:  Run the fitting and evaluation this many times
     :param degrees: orders of polynomial in Bezier simplex fitting. The default is [1, 2,.., 30].
     :param data_x: variables to be fed for Elastic Net regression
@@ -442,7 +445,7 @@ def experiment_bezier(
             np.random.seed(seed)
 
             # Hyperparameters w in the triangle
-            ws_global = triangle.generate_ws_evenly() #参照三角形を生成する関数
+            ws_global = triangle_in_w_space.generate_ws_evenly() #参照三角形を生成する関数
             
             # Ground truth: the manifold to be approximated by the Bezier simplex.
             elastic_net_solutions = fit_elastic_nets(data_x, data_y, ws_global)
@@ -450,7 +453,7 @@ def experiment_bezier(
             # Learn the solution space of elastic net
             bezier_simplex, duration = fit_bezier_simplex(
                 ws_global=ws_global,
-                triangle=triangle,
+                triangle_in_w_space=triangle_in_w_space,
                 # Pick elastic net results for training
                 elastic_net_solutions=[thetas_and_fs(elastic_net_solution, data_x, data_y) for elastic_net_solution in elastic_net_solutions],
                 degree=d
@@ -459,7 +462,7 @@ def experiment_bezier(
             # size of sampled hyperparameter set for testing
             test_size = len(ws_global)//10
             
-            ws_global_test = triangle.generate_ws_randomly(number=test_size)
+            ws_global_test = triangle_in_w_space.generate_ws_randomly(number=test_size)
             
             elastic_net_thetas_test = fit_elastic_nets(data_x, data_y, ws_global_test)
             
@@ -468,7 +471,7 @@ def experiment_bezier(
                     # [w1, w2, w3] for index i
                     thetas_and_fs(elastic_net_thetas_test[i], data_x, data_y)
                     - bezier_simplex([
-                        triangle.localize_w(ws_global_test[i])
+                        triangle_in_w_space.localize_w(ws_global_test[i])
                     ]).detach().numpy())
                 for i in range(test_size)
             ]
@@ -519,9 +522,10 @@ class MyTest(unittest.TestCase):
                 relative=0.5
             )
 
-        approximation_errors, training_timings = experiment_bezier(triangle=Triangle(hierarchical_position=[Subdivision.triangle_center]), num_experiments=5, degrees=[0, 2]
-                                          # data_x=x, data_y=y  # Load fish. (Comment this line to do this fitting with the default toy data)
-                                          )
+        approximation_errors, training_timings = experiment_bezier(
+            triangle_in_w_space=Triangle_in_w_space(hierarchical_position=[Subdivision.triangle_center]), num_experiments=5, degrees=[0, 2]
+            # data_x=x, data_y=y  # Load fish. (Comment this line to do this fitting with the default toy data)
+            )
         
         degree_0_error_triangle_center = np.median(approximation_errors[0])
         degree_2_error_triangle_center = np.median(approximation_errors[2])
