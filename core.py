@@ -348,6 +348,7 @@ class Triangle_in_w_space:
             return (x, y, z)
 
         # TODO With this hack, the performance becomes slower as the triangle gets smaller...
+        print("warning: for the current implementation, the random number generation becomes slower as the triangle gets smaller.")
         ls = []
         while len(ls) != number:
             w = random_w()
