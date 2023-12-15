@@ -310,7 +310,6 @@ class Triangle_in_w_space:
     A (subdivided) triangle in the space of hyperparameter w.
     """
     def __init__(self, hierarchical_position: [int] = []):
-        self._resolution = 40 
         self._hierarchical_position = hierarchical_position
 
     def in_triangle(self, w: [float]):
@@ -357,7 +356,8 @@ class Triangle_in_w_space:
         return ls
 
     def generate_ws_evenly(
-            self
+            self,
+            resolution
     ):
         """
         Return [(w1, w2, w3)].
@@ -369,7 +369,6 @@ class Triangle_in_w_space:
             The right corner of the 2nd subdivision in the left corner of the 1st is [Subdivision.triangle_0, Subdivision.triangle_1],
             ...
         """
-        resolution = self._resolution
         
         ls = []
         for w1 in range(resolution + 1):
@@ -446,7 +445,7 @@ def experiment_bezier(
             np.random.seed(seed)
 
             # Hyperparameters w in the triangle
-            ws_global = triangle_in_w_space.generate_ws_evenly() #参照三角形を生成する関数
+            ws_global = triangle_in_w_space.generate_ws_evenly(resolution=40) #参照三角形を生成する関数
             
             # Ground truth: the manifold to be approximated by the Bezier simplex.
             elastic_net_solutions = fit_elastic_nets(data_x, data_y, ws_global)
