@@ -35,7 +35,7 @@ def in_triangle_(smallest_triangle: [int], w: [float], c= 0):
 
     if abs(sum(w) - 1.0 ) > 1e-4: raise Exception("Sum of w coordinates is not 1.")
 
-    if smallest_triangle == []:
+    if smallest_triangle == ():
         return 0.0 <= w[0] and 0.0 <= w[1] and 0.0 <= w[2]
 
     t = smallest_triangle[-1]  # triangle position
@@ -84,9 +84,9 @@ def in_triangle_(smallest_triangle: [int], w: [float], c= 0):
     else:
         if t != Subdivision.triangle_center : raise Exception("Bad triangle")
         return \
-                (not in_triangle_(smallest_triangle=smallest_triangle[:-1] + [Subdivision.triangle_0], w=w,c= 1)) and \
-                (not in_triangle_(smallest_triangle=smallest_triangle[:-1] + [Subdivision.triangle_1], w=w,c= 1)) and \
-                (not in_triangle_(smallest_triangle=smallest_triangle[:-1] + [Subdivision.triangle_2], w=w,c= 1))
+                (not in_triangle_(smallest_triangle=smallest_triangle[:-1] + (Subdivision.triangle_0,), w=w,c= 1)) and \
+                (not in_triangle_(smallest_triangle=smallest_triangle[:-1] + (Subdivision.triangle_1,), w=w,c= 1)) and \
+                (not in_triangle_(smallest_triangle=smallest_triangle[:-1] + (Subdivision.triangle_2,), w=w,c= 1))
 
     
 def transform_w(triangle, bnd, w):
@@ -161,9 +161,9 @@ def compute_triangle_edges(
             # Triangle is in the corner.
             triangle_edges[tri] = triangle_edge(triangle=triangle_in_hierarchy[:level + 1])
         else: # triangle is the central one
-            triangle_edges[0] = triangle_edge(triangle=triangle_in_hierarchy[:level] + [Subdivision.triangle_0])
-            triangle_edges[1] = triangle_edge(triangle=triangle_in_hierarchy[:level] + [Subdivision.triangle_1])
-            triangle_edges[2] = triangle_edge(triangle=triangle_in_hierarchy[:level] + [Subdivision.triangle_2])
+            triangle_edges[0] = triangle_edge(triangle=triangle_in_hierarchy[:level] + (Subdivision.triangle_0,))
+            triangle_edges[1] = triangle_edge(triangle=triangle_in_hierarchy[:level] + (Subdivision.triangle_1,))
+            triangle_edges[2] = triangle_edge(triangle=triangle_in_hierarchy[:level] + (Subdivision.triangle_2,))
             
     return triangle_edges
 
@@ -309,12 +309,13 @@ class Hierarchical_position_data_model:
     Position of a triangle in the subdivision hierarchy.
     Encode the hierarchical position topologically
     """
-    def __init__(self, as_list: [int]):
-        self._as_list = as_list
+    def __init__(self, as_tuple: (int,)):
+        assert(type(as_tuple) == tuple)
+        self._as_tuple = as_tuple
     
     @property
-    def as_list(self):
-        return self._as_list
+    def as_tuple(self):
+        return self._as_tuple
 
 class Triangle_in_w_space:
     """
@@ -322,7 +323,7 @@ class Triangle_in_w_space:
     """
     def __init__(self,
                  hierarchical_position_data_model: Hierarchical_position_data_model
-                 = Hierarchical_position_data_model(as_list=[])
+                 = Hierarchical_position_data_model(as_tuple=())
                  ):
         self._hierarchical_position_data_model = hierarchical_position_data_model
     
@@ -335,7 +336,7 @@ class Triangle_in_w_space:
         def outside (triangle, w):
             return not in_triangle_(triangle, w)
 
-        postion_in_hierarchy = self._hierarchical_position_data_model.as_list
+        postion_in_hierarchy = self._hierarchical_position_data_model.as_tuple
 
         levels = range(len(postion_in_hierarchy) + 1)
 
@@ -424,11 +425,11 @@ class Triangle_in_w_space:
         # As we get the output as a list, we un-wrap the element that corresponds to the input w.
         # (In fact, the output list has length 1.)
 
-        triangle_as_list = self.hierarchical_position_data_model.as_list
+        triangle_as_tuple = self.hierarchical_position_data_model.as_tuple
 
-        triangle_edges = compute_triangle_edges(triangle_in_hierarchy=triangle_as_list)
+        triangle_edges = compute_triangle_edges(triangle_in_hierarchy=triangle_as_tuple)
         
-        return transform_w(triangle=triangle_as_list, bnd=triangle_edges, w=w_global)
+        return transform_w(triangle=triangle_as_tuple, bnd=triangle_edges, w=w_global)
 
 def experiment_bezier(
         triangle_in_w_space: Triangle_in_w_space = Triangle_in_w_space(),
@@ -545,7 +546,8 @@ class MyTest(unittest.TestCase):
 
         approximation_errors, training_timings = experiment_bezier(
             triangle_in_w_space=Triangle_in_w_space(
-                hierarchical_position_data_model=Hierarchical_position_data_model(as_list=[Subdivision.triangle_center])
+                hierarchical_position_data_model=Hierarchical_position_data_model(
+                    as_tuple=(Subdivision.triangle_center,))
             ),
             num_experiments=5, degrees=[0, 2]
             # data_x=x, data_y=y  # Load fish. (Comment this line to do this fitting with the default toy data)
