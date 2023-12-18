@@ -304,7 +304,11 @@ def fit_bezier_simplex(ws_global, triangle_in_w_space, degree, elastic_net_solut
     
     return bezier_simplex, (time_end - time_start)
 
-class Hierarchy_position_data_model:
+class Hierarchical_position_data_model:
+    """
+    Position of a triangle in the subdivision hierarchy.
+    Encode the hierarchical position topologically
+    """
     def __init__(self, as_list: [int]):
         self._as_list = as_list
     
@@ -317,8 +321,8 @@ class Triangle_in_w_space:
     A (subdivided) triangle in the space of hyperparameter w.
     """
     def __init__(self,
-                 hierarchical_position_data_model: Hierarchy_position_data_model
-                 = Hierarchy_position_data_model(as_list=[])
+                 hierarchical_position_data_model: Hierarchical_position_data_model
+                 = Hierarchical_position_data_model(as_list=[])
                  ):
         self._hierarchical_position_data_model = hierarchical_position_data_model
     
@@ -541,7 +545,7 @@ class MyTest(unittest.TestCase):
 
         approximation_errors, training_timings = experiment_bezier(
             triangle_in_w_space=Triangle_in_w_space(
-                hierarchical_position_data_model=Hierarchy_position_data_model(as_list=[Subdivision.triangle_center])
+                hierarchical_position_data_model=Hierarchical_position_data_model(as_list=[Subdivision.triangle_center])
             ),
             num_experiments=5, degrees=[0, 2]
             # data_x=x, data_y=y  # Load fish. (Comment this line to do this fitting with the default toy data)
