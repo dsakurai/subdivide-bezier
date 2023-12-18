@@ -431,6 +431,61 @@ class Triangle_in_w_space:
         
         return transform_w(triangle=triangle_as_tuple, bnd=triangle_edges, w=w_global)
 
+class Bezier_simplex:
+    def __init__(self, as_pytorch: torch_bsf.BezierSimplex):
+        self._as_pytorch = as_pytorch
+    
+    @property
+    def as_pytorch(self) -> torch_bsf.BezierSimplex:
+        return self._as_pytorch
+    
+    def predict(self, *args):
+        """ Redirect the call to torch_bsf """
+        return self.as_pytorch(*args) # return the prediction results
+
+class Triangle_data_model:
+
+    def __init__(self,
+                 in_w_space: Triangle_in_w_space,
+                 degree: int
+                 ):
+        self.in_w_space = in_w_space
+        self._degree = degree
+        
+    @property
+    def degree(self):
+        return self._degree
+    
+class Triangle_hierarchy:
+    def __init__(self):
+        self._container = dict()
+
+    def insert_triangle(self,
+                        triangle: Triangle_data_model):
+        self._container[
+            triangle.in_w_space.hierarchical_position.as_tuple
+        ] = triangle
+
+def train(triangle: Triangle_data_model,
+          ws_global,
+          data_x, data_y
+          ) -> (Bezier_simplex, float) :
+
+    # Ground truth: the manifold to be approximated by the Bezier simplex.
+    elastic_net_solutions = fit_elastic_nets(data_x, data_y, ws_global)
+
+    # Learn the solution space of elastic net
+    torch_bezier_simplex, duration = fit_bezier_simplex(
+        ws_global=ws_global,
+        triangle_in_w_space=triangle.in_w_space,
+        # Pick elastic net results for training
+        elastic_net_solutions=[thetas_and_fs(elastic_net_solution, data_x, data_y) for elastic_net_solution in elastic_net_solutions],
+        degree=triangle.degree
+    )
+
+    bezier_simplex_learned = Bezier_simplex(as_pytorch=torch_bezier_simplex)
+    return bezier_simplex_learned, duration
+
 def experiment_bezier(
         triangle_in_w_space: Triangle_in_w_space = Triangle_in_w_space(),
         num_experiments: [int] = 5,
@@ -465,22 +520,16 @@ def experiment_bezier(
         for d in degrees:
         
             np.random.seed(seed)
-
-            # Hyperparameters w in the triangle
-            ws_global = triangle_in_w_space.generate_ws_evenly(resolution=40) #参照三角形を生成する関数
             
-            # Ground truth: the manifold to be approximated by the Bezier simplex.
-            elastic_net_solutions = fit_elastic_nets(data_x, data_y, ws_global)
+            ws_global = triangle_in_w_space.generate_ws_evenly(resolution=40) #参照三角形を生成する関数
 
-            # Learn the solution space of elastic net
-            bezier_simplex, duration = fit_bezier_simplex(
+            bezier_simplex, duration = train(
+                triangle=Triangle_data_model(in_w_space=triangle_in_w_space, degree=d),
                 ws_global=ws_global,
-                triangle_in_w_space=triangle_in_w_space,
-                # Pick elastic net results for training
-                elastic_net_solutions=[thetas_and_fs(elastic_net_solution, data_x, data_y) for elastic_net_solution in elastic_net_solutions],
-                degree=d
-                )
-                
+                data_x=data_x,
+                data_y=data_y
+            )
+
             # size of sampled hyperparameter set for testing
             test_size = len(ws_global)//10
             
@@ -492,7 +541,7 @@ def experiment_bezier(
                 np.square(
                     # [w1, w2, w3] for index i
                     thetas_and_fs(elastic_net_thetas_test[i], data_x, data_y)
-                    - bezier_simplex([
+                    - bezier_simplex.predict([
                         triangle_in_w_space.localize_w(ws_global_test[i])
                     ]).detach().numpy())
                 for i in range(test_size)
