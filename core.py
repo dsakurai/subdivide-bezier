@@ -322,21 +322,21 @@ class Triangle_in_w_space:
     A (subdivided) triangle in the space of hyperparameter w.
     """
     def __init__(self,
-                 hierarchical_position_data_model: Hierarchical_position_data_model
+                 hierarchical_position: Hierarchical_position_data_model
                  = Hierarchical_position_data_model(as_tuple=())
                  ):
-        self._hierarchical_position_data_model = hierarchical_position_data_model
+        self._hierarchical_position: Hierarchical_position_data_model = hierarchical_position
     
     @property
-    def hierarchical_position_data_model(self):
-        return self._hierarchical_position_data_model
+    def hierarchical_position(self) -> Hierarchical_position_data_model:
+        return self._hierarchical_position
 
     def in_triangle(self, w: [float]):
 
         def outside (triangle, w):
             return not in_triangle_(triangle, w)
 
-        postion_in_hierarchy = self._hierarchical_position_data_model.as_tuple
+        postion_in_hierarchy = self._hierarchical_position.as_tuple
 
         levels = range(len(postion_in_hierarchy) + 1)
 
@@ -425,7 +425,7 @@ class Triangle_in_w_space:
         # As we get the output as a list, we un-wrap the element that corresponds to the input w.
         # (In fact, the output list has length 1.)
 
-        triangle_as_tuple = self.hierarchical_position_data_model.as_tuple
+        triangle_as_tuple = self.hierarchical_position.as_tuple
 
         triangle_edges = compute_triangle_edges(triangle_in_hierarchy=triangle_as_tuple)
         
@@ -595,7 +595,7 @@ class MyTest(unittest.TestCase):
 
         approximation_errors, training_timings = experiment_bezier(
             triangle_in_w_space=Triangle_in_w_space(
-                hierarchical_position_data_model=Hierarchical_position_data_model(
+                hierarchical_position=Hierarchical_position_data_model(
                     as_tuple=(Subdivision.triangle_center,))
             ),
             num_experiments=5, degrees=[0, 2]
