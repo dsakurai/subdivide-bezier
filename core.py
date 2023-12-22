@@ -188,43 +188,50 @@ def w_2_alpha_l1(w):
     
     return alpha, L1_ratio
 
-def fit_elastic_nets(x, y, w):
+def fit_one_elastic_net(
+        data_x: pd.DataFrame,
+        data_y: pd.DataFrame,
+        w_0_1_2: [float]):
+
+    # transform (w1, w2, w3) to the standard hyperparamenters, i.e. alpha and l1-ratio
+    alpha, l1_ratio = w_2_alpha_l1(w_0_1_2)
+
+    def fit(model):
+        elastic_net      = model.fit(data_x, data_y)
+        elastic_net_np   = elastic_net.coef_
+        return elastic_net_np.tolist()
+
+    # alpha and l1_ratio are prone to error. /Users/zaizenkiichi/PycharmProjects/pythonProject2/venv/lib/python3.8/site-packages/sklearn/linear_model/_coordinate_descent.py:648: ConvergenceWarning: Objective did not converge. You might want to increase the number of iterations, check the scale of the features or consider increasing regularisation. Duality gap: 1.473e+00, tolerance: 5.000e-04 Linear regression models with null weight for the l1 regularization term are more efficiently fitted using one of the solvers implemented in sklearn.linear_model.Ridge/RidgeCV instead.model = cd_fast.enet_coordinate_descent(
+
+    if alpha < 0.04: # Scikit-learn tends to fail to converge ElasticNet under this setting.
+        coefficients = fit(LinearRegression())
+        coefficients = coefficients[0] # ElasticNet weirdness in Scikit-learn...
+
+    elif l1_ratio < 1e-4: # L1_ratio が大体 1e-4 より低い時にElastic Netが収束しない問題がある。　#todo小さい時は置き換える
+        coefficients = fit(Ridge(alpha=alpha))
+        coefficients = coefficients[0] # Ridge regression weirdness in Scikit-learn...
+
+    else: # Do ElasticNet
+        coefficients = fit(ElasticNet(alpha=alpha, l1_ratio=l1_ratio))
+    
+    return coefficients
+
+def fit_elastic_nets(x, y, ws):
     """
     エラスティックネットの計算をする。
     :param x: エラスティックネットの説明変数
     :param y: エラスティックネットの目的変数
-    :param w:エラスティックネットのハイパーパラメータ
+    :param ws:エラスティックネットのハイパーパラメータ
     :return:エラスティックネットの計算結果。パレート集合。
     """
     data_x = pd.DataFrame(x)
     data_y = pd.DataFrame(y)
-    ls = [] # TODO change to Pandas dataframe?
     
-    for w_0_1_2 in w:
-        # transform (w1, w2, w3) to the standard hyperparamenters, i.e. alpha and l1-ratio
-        alpha, l1_ratio = w_2_alpha_l1(w_0_1_2)
-        
-        def fit(model):
-            elastic_net      = model.fit(data_x, data_y)
-            elastic_net_np   = elastic_net.coef_
-            return elastic_net_np.tolist()
-
-        # alpha and l1_ratio are prone to error. /Users/zaizenkiichi/PycharmProjects/pythonProject2/venv/lib/python3.8/site-packages/sklearn/linear_model/_coordinate_descent.py:648: ConvergenceWarning: Objective did not converge. You might want to increase the number of iterations, check the scale of the features or consider increasing regularisation. Duality gap: 1.473e+00, tolerance: 5.000e-04 Linear regression models with null weight for the l1 regularization term are more efficiently fitted using one of the solvers implemented in sklearn.linear_model.Ridge/RidgeCV instead.model = cd_fast.enet_coordinate_descent(
-        
-        if alpha < 0.04: # Scikit-learn tends to fail to converge ElasticNet under this setting.
-            coefficients = fit(LinearRegression())
-            coefficients = coefficients[0] # ElasticNet weirdness in Scikit-learn...
-            
-        elif l1_ratio < 1e-4: # L1_ratio が大体 1e-4 より低い時にElastic Netが収束しない問題がある。　#todo小さい時は置き換える
-            coefficients = fit(Ridge(alpha=alpha))
-            coefficients = coefficients[0] # Ridge regression weirdness in Scikit-learn...
-
-        else: # Do ElasticNet
-            coefficients = fit(ElasticNet(alpha=alpha, l1_ratio=l1_ratio))
-
-        ls.append(coefficients)
-
-    return ls
+    return [
+        # coefficients of the elastic net
+        fit_one_elastic_net(data_x=data_x, data_y=data_y, w_0_1_2=w_0_1_2)
+        for w_0_1_2 in ws
+    ]
 
 def f3(coef):
     X = np.array(coef)
