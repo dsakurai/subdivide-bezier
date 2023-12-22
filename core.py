@@ -498,6 +498,12 @@ class Triangle_hierarchy:
     @property
     def container(self):
         return self._container
+        
+    def find(self, w: [float]) -> Triangle_data_model:
+        for triangle in self._container.values():
+            if triangle.in_w_space.in_triangle(w): return triangle
+            
+        raise Exception(f"w {w} is not in triangular hierarchy")
 
 def train(triangle: Triangle_data_model,
           ws_global,
@@ -845,3 +851,10 @@ if __name__ == '__main__':
     )
     
     print(hierarchy)
+    
+    w = [0.3, 0.3, 0.4]
+    
+    prediction = hierarchy.find(w).bezier_simplex_learned.predict([w])
+    
+    print(f"Prediction for {w}:", prediction)
+    
