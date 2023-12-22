@@ -556,19 +556,21 @@ def do_test_triangle(triangle: Triangle_data_model,
         = triangle.bezier_simplex_learned
         
 
-    # TODO No point storing this as a whole...
-    elastic_net_thetas_test = fit_elastic_nets(data_x, data_y, ws_global)
+    df_data_x = pd.DataFrame(data_x)
+    df_data_y = pd.DataFrame(data_y)
 
     errors = [
         np.square(
             # [w1, w2, w3] for index i
             thetas_and_fs( # (θ_0, θ_1, ..., θ_n-1, f_1(θ), f_2(θ), f_3(θ))
-                elastic_net_thetas_test[i], # Fit the elastic net and keep the learned parameters $\theta$.
-                data_x, data_y)
+                fit_one_elastic_net(data_x=df_data_x, data_y=df_data_y, w_0_1_2=w), # Fit the elastic net and keep the learned parameters $\theta$.
+                data_x, data_y
+            )
             - bezier_simplex.predict([
-                triangle.in_w_space.localize_w(ws_global[i])
-            ]).detach().numpy())
-        for i in range(len(ws_global))
+                triangle.in_w_space.localize_w(w)
+            ]).detach().numpy()
+        )
+        for w in ws_global
     ]
     
     return np.mean(errors)
