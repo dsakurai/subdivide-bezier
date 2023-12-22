@@ -449,22 +449,69 @@ class Triangle_data_model:
                  in_w_space: Triangle_in_w_space,
                  degree: int
                  ):
+        """
+        :param in_w_space: 
+        :param degree: the order of the polynomial regression used in Bezier fitting
+        """
+        
         self.in_w_space = in_w_space
         self._degree = degree
+        
+        self._bezier_simplex_learned = None
+        self._training_duration = None
+        self._error = None
         
     @property
     def degree(self):
         return self._degree
+        
+    @property
+    def bezier_simplex_learned(self):
+        assert self._bezier_simplex_learned is not None
+        return self._bezier_simplex_learned
+        
+    @property
+    def hierarchical_position(self) -> Hierarchical_position_data_model:
+        return self.in_w_space.hierarchical_position
+    
+    @property
+    def training_duration(self):
+        assert self._training_duration is not None
+        return self._training_duration
+        
+    def set_training_results(self, training_results):
+        self._bezier_simplex_learned = training_results[0]
+        self._training_duration      = training_results[1]
+        
+    
+    @property
+    def error(self):
+        assert self._error is not None
+        return self._error
+        
+    @error.setter
+    def error(self, value):
+        assert self._error is None
+        self._error = value
+    
+    # Sort the triangle according to the error
+    def __lt__(self, other):
+        return self.error , other.error
     
 class Triangle_hierarchy:
-    def __init__(self):
+    def __init__(self, initial_triangle: Triangle_data_model):
         self._container = dict()
+        self.insert_triangle(triangle=initial_triangle)
 
     def insert_triangle(self,
                         triangle: Triangle_data_model):
         self._container[
             triangle.in_w_space.hierarchical_position.as_tuple
         ] = triangle
+    
+    @property
+    def container(self):
+        return self._container
 
 def train(triangle: Triangle_data_model,
           ws_global,
@@ -485,6 +532,46 @@ def train(triangle: Triangle_data_model,
 
     bezier_simplex_learned = Bezier_simplex(as_pytorch=torch_bezier_simplex)
     return bezier_simplex_learned, duration
+
+def do_test_triangle(triangle: Triangle_data_model,
+         ws_global: [[float]],
+         data_x,
+         data_y
+         ):
+    """
+    Compute the error of the learned model for a specific Bezier simplex.
+    
+    The hyperparameters `w` must be sampled in the global coordinates,
+    i.e. samples covering the barycentric coordinates of the largest (i.e. initial) triangle.
+    However, the samples must, of course, be sampled inside the input triangle.
+    
+    :param triangle: Triangle_data_model
+    :param ws_global:
+    :param data_x: input vectors used for training elastic nets
+    :param data_y: output vectors used for training elastic nets
+    """
+
+    bezier_simplex: Bezier_simplex \
+        = triangle.bezier_simplex_learned
+        
+
+    # TODO No point storing this as a whole...
+    elastic_net_thetas_test = fit_elastic_nets(data_x, data_y, ws_global)
+
+    errors = [
+        np.square(
+            # [w1, w2, w3] for index i
+            thetas_and_fs( # (θ_0, θ_1, ..., θ_n-1, f_1(θ), f_2(θ), f_3(θ))
+                elastic_net_thetas_test[i], # Fit the elastic net and keep the learned parameters $\theta$.
+                data_x, data_y)
+            - bezier_simplex.predict([
+                triangle.in_w_space.localize_w(ws_global[i])
+            ]).detach().numpy())
+        for i in range(len(ws_global))
+    ]
+    
+    return np.mean(errors)
+
 
 def experiment_bezier(
         triangle_in_w_space: Triangle_in_w_space = Triangle_in_w_space(),
@@ -522,34 +609,31 @@ def experiment_bezier(
             np.random.seed(seed)
             
             ws_global = triangle_in_w_space.generate_ws_evenly(resolution=40) #参照三角形を生成する関数
+            
+            triangle = Triangle_data_model(in_w_space=triangle_in_w_space, degree=d)
 
-            bezier_simplex, duration = train(
-                triangle=Triangle_data_model(in_w_space=triangle_in_w_space, degree=d),
-                ws_global=ws_global,
-                data_x=data_x,
-                data_y=data_y
-            )
+            triangle.set_training_results(
+                training_results=train(
+                    triangle=triangle,
+                    ws_global=ws_global,
+                    data_x=data_x,
+                    data_y=data_y
+                ))
+            duration = triangle.training_duration
 
             # size of sampled hyperparameter set for testing
             test_size = len(ws_global)//10
             
-            ws_global_test = triangle_in_w_space.generate_ws_randomly(number=test_size)
-            
-            elastic_net_thetas_test = fit_elastic_nets(data_x, data_y, ws_global_test)
-            
-            errors = [
-                np.square(
-                    # [w1, w2, w3] for index i
-                    thetas_and_fs(elastic_net_thetas_test[i], data_x, data_y)
-                    - bezier_simplex.predict([
-                        triangle_in_w_space.localize_w(ws_global_test[i])
-                    ]).detach().numpy())
-                for i in range(test_size)
-            ]
+            error = do_test_triangle(
+                triangle=triangle,
+                ws_global=triangle_in_w_space.generate_ws_randomly(number=test_size),
+                data_x=data_x,
+                data_y=data_y
+            )
 
             approximation_errors_j.append(
-                np.mean(errors)) # 1つのパレートフロント全体/一部から1つのベジエ単体全体へのテスト誤差
-            training_timings_j.append(duration)
+                error) # 1つのパレートフロント全体/一部から1つのベジエ単体全体へのテスト誤差
+            training_timings_j.append(duration) # time spent for training
 
         approximation_errors.append(approximation_errors_j)
         training_timings.append(training_timings_j)
