@@ -2,6 +2,7 @@ from math import log10
 import numpy as np
 import pandas as pd
 from sklearn.linear_model import LinearRegression, Ridge, ElasticNet
+from sortedcontainers import SortedList
 import time
 import torch
 import torch_bsf
@@ -564,6 +565,115 @@ def do_test_triangle(triangle: Triangle_data_model,
     
     return np.mean(errors)
 
+def subdivide(
+        triangle: Triangle_data_model,
+        hierarchy: Triangle_hierarchy,
+) -> [Triangle_data_model]:
+
+    # delete the triangle from the container
+    del hierarchy.container[
+        triangle.hierarchical_position.as_tuple
+    ]
+
+    as_tuple = triangle.hierarchical_position.as_tuple
+    
+    out = []
+
+    for tri in [Subdivision.triangle_0,
+                Subdivision.triangle_1,
+                Subdivision.triangle_2,
+                Subdivision.triangle_center,
+                ]:
+        # subdivided position
+        new_triangle_in_w_space = Triangle_in_w_space(
+            hierarchical_position=Hierarchical_position_data_model(
+                as_tuple= as_tuple + (tri,) # subdivided position
+            )
+        )
+        
+        new_triangle_data_model = Triangle_data_model(
+            in_w_space=new_triangle_in_w_space,
+            degree=1
+        )
+        out.append(new_triangle_data_model)
+
+        hierarchy.container[
+            new_triangle_in_w_space.hierarchical_position.as_tuple
+        ] = new_triangle_data_model
+    
+    return out
+
+
+def main_loop(data_x, data_y):
+
+    def train_and_test_triangle(triangle: Triangle_data_model):
+
+        # Hyperparameters w inside this triangle, to be supplied for training data 
+        ws_global = triangle.in_w_space.generate_ws_evenly(resolution=40) #参照三角形を生成する関数
+
+        # 0. Learn elastic nets with different hyperparameters $w$ (i.e. `ws_global`)
+        # 1. Learn the solution space of elastic net
+        # 2. Set the bezier simplex fitting results
+        # 3. Keep the training time
+        triangle.set_training_results(
+            training_results=train(
+                triangle=triangle,
+                ws_global=ws_global,
+                data_x=data_x,
+                data_y=data_y) )
+
+        # Measure the error. This error is used to sort the triangles in the queue.
+        triangle.error = do_test_triangle(
+            triangle=triangle,
+            ws_global=triangle.in_w_space.generate_ws_randomly(number=100),
+            data_x=data_x,
+            data_y=data_y
+        )
+
+    triangle = Triangle_data_model(
+        in_w_space=Triangle_in_w_space(
+            hierarchical_position=Hierarchical_position_data_model(
+                as_tuple=())
+        ),
+        degree = 1
+    )
+
+    train_and_test_triangle(triangle=triangle)
+
+    hierarchy = Triangle_hierarchy(
+        initial_triangle=triangle
+    )
+
+    # stupid sample termination condition 
+    def is_finished(hierarchy: Triangle_hierarchy): return len(hierarchy.container) >= 2
+
+    if is_finished(hierarchy=hierarchy): return hierarchy
+
+    queue = SortedList()
+    queue.add(triangle)
+
+    while not is_finished(hierarchy=hierarchy): # size of queue will never be 0
+
+        triangle: Triangle_data_model = queue.pop() # triangle with the worst error
+
+        # Subdivide the triangle into smaller triangles 
+        small_triangles = subdivide(
+            triangle=triangle,
+            hierarchy=hierarchy)
+
+        for small_triangle in small_triangles:
+
+            train_and_test_triangle(triangle=small_triangle)
+
+            # Insert the triangle while maintaining the sort.
+            # The sorting respects the comparator `__lt__()` of the triangle class.
+            # (I.e. do a binary search and insert the triangle in the right position.)
+            # If another triangle with the same error value exists, 
+            # the new triangle will still be inserted 
+            queue.add(small_triangle)
+
+    return hierarchy
+
 
 def experiment_bezier(
         triangle_in_w_space: Triangle_in_w_space = Triangle_in_w_space(),
@@ -723,3 +833,15 @@ class MyTest(unittest.TestCase):
                 0.95,
                 relative=0.5
             )
+
+if __name__ == '__main__':
+    hierarchy = main_loop(
+        # Mizota et al.
+        data_x=[[ 1.0,  2.0,  3.0],
+                [ 6.0,  5.0,  4.0],
+                [ 7.0,  8.0,  9.0],
+                [12.0, 11.0, 10.0]],
+        data_y=[1.0, 2.0, 3.0, 4.0]
+    )
+    
+    print(hierarchy)
