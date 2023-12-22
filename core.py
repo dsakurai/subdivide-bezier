@@ -181,18 +181,12 @@ def w_2_alpha_l1(w):
     :param w: 変換される座標
     :return: 変換されたハイパーパラメータ
     """
-    ls = []
-    for i in w:
-        list2 = []
-        e = 1e-4 # これ小さすぎ？
-        alpha = calc_alpha(i[0], e)
-        L1_ratio = calc_L1_ratio(i[0], i[1], e)
-        list2.append(alpha)
-        list2.append(L1_ratio)
-        ls.append(list2)
 
-    # regcoef_df = pd.DataFrame(ls)
-    return ls
+    e = 1e-4 # TODO Is this too small?
+    alpha = calc_alpha(w[0], e)
+    L1_ratio = calc_L1_ratio(w[0], w[1], e)
+    
+    return alpha, L1_ratio
 
 def fit_elastic_nets(x, y, w):
     """
@@ -206,9 +200,9 @@ def fit_elastic_nets(x, y, w):
     data_y = pd.DataFrame(y)
     ls = [] # TODO change to Pandas dataframe?
     
-    a_l = w_2_alpha_l1(w) # transform (w1, w2, w3) to the standard hyperparamenters, i.e. alpha and l1-ratio
-    
-    for alpha, l1_ratio in a_l:
+    for w_0_1_2 in w:
+        # transform (w1, w2, w3) to the standard hyperparamenters, i.e. alpha and l1-ratio
+        alpha, l1_ratio = w_2_alpha_l1(w_0_1_2)
         
         def fit(model):
             elastic_net      = model.fit(data_x, data_y)
