@@ -216,22 +216,6 @@ def fit_one_elastic_net(
     
     return coefficients
 
-def fit_elastic_nets(x, y, ws):
-    """
-    エラスティックネットの計算をする。
-    :param x: エラスティックネットの説明変数
-    :param y: エラスティックネットの目的変数
-    :param ws:エラスティックネットのハイパーパラメータ
-    :return:エラスティックネットの計算結果。パレート集合。
-    """
-    data_x = pd.DataFrame(x)
-    data_y = pd.DataFrame(y)
-    
-    return [
-        # coefficients of the elastic net
-        fit_one_elastic_net(data_x=data_x, data_y=data_y, w_0_1_2=w_0_1_2)
-        for w_0_1_2 in ws
-    ]
 
 def f3(coef):
     X = np.array(coef)
@@ -518,16 +502,21 @@ def train(triangle: Triangle_data_model,
           ws_global,
           data_x, data_y
           ) -> (Bezier_simplex, float) :
-
-    # Ground truth: the manifold to be approximated by the Bezier simplex.
-    elastic_net_solutions = fit_elastic_nets(data_x, data_y, ws_global)
+          
+    df_data_x = pd.DataFrame(data=data_x)
+    df_data_y = pd.DataFrame(data=data_y)
 
     # Learn the solution space of elastic net
     torch_bezier_simplex, duration = fit_bezier_simplex(
         ws_global=ws_global,
         triangle_in_w_space=triangle.in_w_space,
         # Pick elastic net results for training
-        elastic_net_solutions=[thetas_and_fs(elastic_net_solution, data_x, data_y) for elastic_net_solution in elastic_net_solutions],
+        elastic_net_solutions=[ # ground truth elastic nets
+            thetas_and_fs(
+                elastic_net_thetas=fit_one_elastic_net(df_data_x, df_data_y, w),
+                data_x=data_x, data_y=data_y)
+            for w in ws_global
+        ],
         degree=triangle.degree
     )
 
