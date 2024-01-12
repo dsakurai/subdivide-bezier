@@ -2,7 +2,7 @@ from math import log10
 import numpy as np
 import pandas as pd
 from sklearn.linear_model import LinearRegression, Ridge, ElasticNet
-from sortedcontainers import SortedList
+from sortedcontainers import SortedList, SortedDict
 import time
 import torch
 import torch_bsf
@@ -486,7 +486,7 @@ class Triangle_data_model:
     
 class Triangle_hierarchy:
     def __init__(self, initial_triangle: Triangle_data_model):
-        self._container = dict()
+        self._container = SortedDict()
         self.insert_triangle(triangle=initial_triangle)
 
     def insert_triangle(self,
@@ -500,7 +500,10 @@ class Triangle_hierarchy:
         return self._container
         
     def find(self, w: [float]) -> Triangle_data_model:
-        for triangle in self._container.values():
+        """
+        Find the smallest triangle that contains the given point in the w-space.
+        """
+        for triangle in reversed(self._container.values()): # Originally sorted according to the lexicographical ordering of the tirangle position code.
             if triangle.in_w_space.in_triangle(w): return triangle
             
         raise Exception(f"w {w} is not in triangular hierarchy")
