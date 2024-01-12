@@ -606,9 +606,7 @@ def subdivide(
         )
         out.append(new_triangle_data_model)
 
-        hierarchy.container[
-            new_triangle_in_w_space.hierarchical_position.as_tuple
-        ] = new_triangle_data_model
+        hierarchy.insert_triangle(new_triangle_data_model)
     
     return out
 
