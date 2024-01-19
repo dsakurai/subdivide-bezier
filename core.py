@@ -572,7 +572,7 @@ def do_test_triangle(triangle: Triangle_data_model,
         for w in ws_global
     ]
     
-    return np.mean(errors)
+    return np.max(errors)
 
 def subdivide(
         triangle: Triangle_data_model,
@@ -773,7 +773,7 @@ class MyTest(unittest.TestCase):
         degree_2_error = np.median(approximation_errors[2])
         
         self.assertAlmostEqual(
-            degree_2_error/degree_0_error, 0.09, relative=0.5
+            degree_2_error/degree_0_error, 0.3, relative=0.5
         )
         
         degree_0_time = np.median(training_timings[0])
@@ -817,7 +817,7 @@ class MyTest(unittest.TestCase):
         with self.subTest():
             self.assertAlmostEqual(
                 degree_0_error_triangle_center/degree_0_error,
-                0.4,
+                1.02,
                 relative=0.5
             )
 
